@@ -66,11 +66,14 @@ This repository has high hopes of having the following functionality:
 - can maybe add some measure on how distant one is from cities
 - maybe subscribing to an area so you can be alerted some number of days out if conditions will be good
 
+## Installation
+
+- Read backend/README.md
+- Read frontend/README.md
+
 ## TODO
 
-- backend todos
 - frontend todos
 - Set up production server for vuejs
-- Write script to get the whole thing up and running
+- Write script to get start both servers
 - Deploy to droplet
-- install instructions
