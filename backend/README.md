@@ -19,5 +19,4 @@ Check out `examples/playing_around.ipynb`!
 
 ## TO-DO
 
-- limit CORS
 - Write star predictions

@@ -68,7 +68,6 @@ This repository has high hopes of having the following functionality:
 
 ## TODO
 
-- github repo for versioning
 - backend todos
 - frontend todos
 - Set up production server for vuejs
