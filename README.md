@@ -73,6 +73,7 @@ This repository has high hopes of having the following functionality:
 
 ## TODO
 
+- understand licensing
 - frontend todos
 - Set up production server for vuejs
 - Write script to get start both servers

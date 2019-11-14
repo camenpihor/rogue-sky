@@ -1,6 +1,10 @@
 {
     "name": "rogue_sky",
     "version": "0.1.0",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/camenpihor/rogue-sky"
+    },
     "private": true,
     "scripts": {
         "serve": "vue-cli-service serve",
