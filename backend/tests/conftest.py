@@ -74,6 +74,32 @@ def parsed_darksky_forecast():
     )
 
 
+@pytest.fixture(scope="module")
+def serialized_weather_forecast():
+    """A serialized daily weather forecast.
+
+    Serialized with rogue_sky.backend.darksky._serialize()
+    """
+    return json.loads(
+        pkg_resources.resource_string(
+            "tests.resources", "test_serialized_weather_forecast.json"
+        )
+    )
+
+
+@pytest.fixture(scope="module")
+def parsed_star_visbility_forecast():
+    """A parsed star visibility forecast.
+
+    Parsed with rogue_sky.backend.stars._from_weather()
+    """
+    return json.loads(
+        pkg_resources.resource_string(
+            "tests.resources", "test_parsed_star_visibility_forecast.json"
+        )
+    )
+
+
 @pytest.fixture
 def backend_api_client():
     api.app.config.from_object("rogue_sky.config.TestingConfig")

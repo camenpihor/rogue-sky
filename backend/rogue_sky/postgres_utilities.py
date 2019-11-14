@@ -74,6 +74,11 @@ def create_weather_table(pg_url):
     execute_sql_file(pg_url, filename="create_weather_table.sql")
 
 
+def create_star_table(pg_url):
+    """Create the star visibility predictions table."""
+    execute_sql_file(pg_url, filename="create_star_table.sql")
+
+
 def batch_to_postgres(batch, pg_url, table_name):
     """Batch insert to data to PostgreSQL table.
 

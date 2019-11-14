@@ -25,6 +25,28 @@ def test_create_weather_table(test_database):
     assert set(actual_columns) == set(expected_columns)
 
 
+def test_create_star_table(test_database):
+    postgres_utilities.create_star_table(test_database.pg_url)
+    with test_database.get_cursor() as cursor:
+        cursor.execute(
+            """
+            SELECT column_name
+            FROM information_schema.columns
+            WHERE table_name = 'daily_star_visibility_forecast'
+            """
+        )
+        actual_columns = [x for x, in cursor.fetchall()]
+
+    expected_columns = [
+        "latitude",
+        "longitude",
+        "queried_date_utc",
+        "weather_date_utc",
+        "prediction",
+    ]
+    assert set(actual_columns) == set(expected_columns)
+
+
 def test_batch_to_postgres(test_database):
     with postgres_utilities.get_cursor(test_database.pg_url) as cursor:
         cursor.execute("CREATE TABLE testing (test INT);")

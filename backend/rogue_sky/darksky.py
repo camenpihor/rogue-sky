@@ -158,7 +158,7 @@ def _from_database(latitude, longitude, queried_date_utc, database_url):
 
     Parameters
     ----------
-    atitude : float
+    latitude : float
         Latitude at which to get weather.
     longitude : float
         Longitude at when to get weather.
@@ -226,7 +226,7 @@ def _from_database(latitude, longitude, queried_date_utc, database_url):
 
 
 def _from_darksky(latitude, longitude, queried_date_utc, api_key):
-    """Get today's weather forecast from DarkSky.
+    """Get today's 8-day weather forecast from DarkSky.
 
     Parameters
     ----------
