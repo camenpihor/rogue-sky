@@ -18,7 +18,7 @@
 
 ## TODO
 
+- figure out how to use fontawesome
 - input box for coordinates
-- update favicon
 - update readme
 - learn about package.json what do I need? what can I remove?
