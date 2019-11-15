@@ -14,3 +14,11 @@
 ## Examples
 
 Check out `examples/playing_around.ipynb`!
+
+## TODOs
+
+- geopy is slow :(
+- is there a faster/cleaner address geopy parser?
+- is there another geopy-like thing? maybe just hit google maps api?
+- how to best parse address
+- should I return city, state, or entire address?

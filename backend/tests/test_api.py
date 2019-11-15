@@ -33,7 +33,7 @@ def test_weather_forecast(
     )
 
 
-def test_star_forecast(
+def test_star_forecast_coordinates(
     requests_mock, backend_api_client, test_database, darksky_json_response
 ):
     latitude = 47.6062
@@ -49,6 +49,35 @@ def test_star_forecast(
         json=darksky_json_response,
     )
     response = backend_api_client.get(f"api/stars/{latitude},{longitude}")
+    assert response.status_code == 200
+
+    actual = json.loads(response.data)
+    assert len(actual["daily_forecast"]) == 8
+    assert set(actual.keys()) == set(
+        ["latitude", "longitude", "queried_date_utc", "daily_forecast", "city", "state"]
+    )
+    assert set(actual["daily_forecast"][0].keys()) == set(
+        list(darksky.DAILY_WEATHER_MAPPING.keys()) + ["star_visibility"]
+    )
+
+
+def test_star_forecast_address(
+    requests_mock, backend_api_client, test_database, darksky_json_response
+):
+    address = "Seattle, WA"
+    latitude = 47.6038321
+    longitude = -122.3300624
+    api_key = backend_api_client.application.config["DARKSKY_API_KEY"]
+
+    postgres_utilities.create_weather_table(pg_url=test_database.pg_url)
+    postgres_utilities.create_star_table(pg_url=test_database.pg_url)
+    requests_mock.get(
+        darksky.DARKSKY_URL.format(
+            api_key=api_key, latitude=latitude, longitude=longitude
+        ),
+        json=darksky_json_response,
+    )
+    response = backend_api_client.get(f"api/stars/{address}")
     assert response.status_code == 200
 
     actual = json.loads(response.data)
