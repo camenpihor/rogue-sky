@@ -9,8 +9,6 @@ class DevelopmentConfig:
     Used for development.
     """
 
-    TESTING = False
-    DEBUG = True
     DARKSKY_API_KEY = os.environ["DARKSKY_SECRET_KEY"]
     DATABASE_URL = os.environ["DATABASE_URL"]
 

@@ -18,6 +18,7 @@ def start(dev):
     if dev:
         env = os.environ.copy()
         env["FLASK_APP"] = "rogue_sky/api.py"
+        env["FLASK_ENV"] = "development"
 
         print("Starting development server...")
         subprocess.run(["flask", "run"], env=env)
