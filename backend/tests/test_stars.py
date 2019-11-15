@@ -41,11 +41,25 @@ def test_to_database(test_database, parsed_star_visbility_forecast):
     assert len(actual) == len(parsed_star_visbility_forecast)
 
 
-def test_serialize(parsed_star_visbility_forecast):
-    actual = stars._serialize(predictions=parsed_star_visbility_forecast)
+def test_serialize(parsed_star_visbility_forecast, serialized_weather_forecast):
+    actual = stars._serialize(
+        predictions=parsed_star_visbility_forecast,
+        weather_forecast=serialized_weather_forecast,
+    )
     assert isinstance(actual, dict)
     assert len(actual) == len(parsed_star_visbility_forecast)
     assert actual["0"]["prediction"] == parsed_star_visbility_forecast[0]["prediction"]
+    assert set(actual["0"].keys()) == set(
+        [
+            "latitude",
+            "longitude",
+            "queried_date_utc",
+            "weather_date_utc",
+            "prediction",
+            "weather_json",
+        ]
+    )
+    assert set(actual["0"]["weather_json"]) == set(darksky.DAILY_WEATHER_MAPPING.keys())
 
 
 def test_get_star_forecast(requests_mock, test_database, darksky_json_response):

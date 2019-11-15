@@ -53,7 +53,7 @@ def test_database():
     database.tear_down()
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def darksky_json_response():
     """Response from DarkSky that was translated to JSON."""
     return json.loads(
@@ -61,7 +61,7 @@ def darksky_json_response():
     )
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def parsed_darksky_forecast():
     """A parsed DarkSky forecast.
 
@@ -74,7 +74,7 @@ def parsed_darksky_forecast():
     )
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def serialized_weather_forecast():
     """A serialized daily weather forecast.
 
@@ -87,7 +87,7 @@ def serialized_weather_forecast():
     )
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="function")
 def parsed_star_visbility_forecast():
     """A parsed star visibility forecast.
 
@@ -101,7 +101,7 @@ def parsed_star_visbility_forecast():
 
 
 @pytest.fixture
-def backend_api_client():
+def backend_api_client(scope="method"):
     api.app.config.from_object("rogue_sky.config.TestingConfig")
 
     with api.app.test_client() as client:

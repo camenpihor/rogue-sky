@@ -33,7 +33,7 @@ def test_weather_forecast(
     )
 
 
-def test_weather_forecast(
+def test_star_forecast(
     requests_mock, backend_api_client, test_database, darksky_json_response
 ):
     latitude = 47.6062
@@ -54,5 +54,13 @@ def test_weather_forecast(
     actual = json.loads(response.data)
     assert len(actual) == 8
     assert set(actual["0"].keys()) == set(
-        ["latitude", "longitude", "weather_date_utc", "queried_date_utc", "prediction"]
+        [
+            "latitude",
+            "longitude",
+            "weather_date_utc",
+            "queried_date_utc",
+            "prediction",
+            "weather_json",
+        ]
     )
+    assert set(actual["0"]["weather_json"]) == set(darksky.DAILY_WEATHER_MAPPING.keys())

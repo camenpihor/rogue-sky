@@ -192,13 +192,42 @@ def _from_weather(weather_forecast):
     ]
 
 
-def _serialize(predictions):
-    """Serialize the star visibility forecast into a JSON-parseable nested dictionary.
+def _serialize(predictions, weather_forecast):
+    """Serialize the star visibility and weather forecast into valid JSON.
 
     Parameters
     ----------
     predictions : list(dict)
         Each dict in the list contains the prediction for a day.
+        [
+            {
+                latitude: 42.3601,
+                longitude: -71.0589,
+                queried_date_utc: "2019-01-01",
+                weather_date_utc: "2019-01-01",
+                model_version: "0.1.0",
+                prediction: 0.7,
+            },
+            ...
+        ]
+    weather_forecast : dict(dict)
+        {
+            "0": {
+                "latitude": 42.3601,
+                "longitude": -71.0589,
+                "queried_date_utc": "2019-01-01",
+                "weather_date_utc": "2019-11-10",
+                "weather_json": {...},
+            },
+            "1": {
+                "latitude": 42.3601,
+                "longitude": -71.0589,
+                "queried_date_utc": "2019-01-01",
+                "weather_date_utc": "2019-11-11",
+                "weather_json": {...},
+            },
+            ...
+        }
 
     Returns
     -------
@@ -212,6 +241,7 @@ def _serialize(predictions):
                 "queried_date_utc": "2019-01-01",
                 "weather_date_utc": "2019-11-10",
                 "prediction": 0.7,
+                "weather_json": {...},
             },
             "1": {
                 "latitude": 42.3601,
@@ -219,6 +249,7 @@ def _serialize(predictions):
                 "queried_date_utc": "2019-01-01",
                 "weather_date_utc": "2019-11-11",
                 "prediction": 0.7,
+                "weather_json": {...},
             },
             ...
         }
@@ -229,10 +260,13 @@ def _serialize(predictions):
         predictions[0]["longitude"],
         predictions[0]["queried_date_utc"],
     )
-    return {
+    star_forecast = {
         str(day_idx): daily_prediction
         for day_idx, daily_prediction in enumerate(predictions)
     }
+    for day_idx, daily_prediction in star_forecast.items():
+        daily_prediction["weather_json"] = weather_forecast[day_idx]["weather_json"]
+    return star_forecast
 
 
 def get_star_forecast(latitude, longitude, api_key, database_url):
@@ -273,4 +307,4 @@ def get_star_forecast(latitude, longitude, api_key, database_url):
         )
         predictions = _from_weather(weather_forecast=weather_forecast)
         _to_database(predictions=predictions, database_url=database_url)
-    return _serialize(predictions=predictions)
+    return _serialize(predictions=predictions, weather_forecast=weather_forecast)
