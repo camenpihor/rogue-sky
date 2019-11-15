@@ -8,13 +8,6 @@ import requests
 
 from rogue_sky import darksky, postgres_utilities, stars
 
-API_KEY = "TEST"
-LATITUDE = 1.0
-LONGITUDE = 2.0
-TEST_URL = darksky.DARKSKY_URL.format(
-    api_key=API_KEY, latitude=LATITUDE, longitude=LONGITUDE
-)
-
 
 def test_predict_visibility():
     actual = stars.predict_visibility(np.array([1, 0, np.nan]))
@@ -61,13 +54,19 @@ def test_serialize(parsed_star_visbility_forecast, serialized_weather_forecast):
 
 
 def test_get_star_forecast(requests_mock, test_database, darksky_json_response):
-    requests_mock.get(TEST_URL, json=darksky_json_response)
+    api_key = "test"
+    latitude = 47.6062
+    longitude = -122.3321
+    test_url = darksky.DARKSKY_URL.format(
+        api_key=api_key, latitude=latitude, longitude=longitude
+    )
+    requests_mock.get(test_url, json=darksky_json_response)
     postgres_utilities.create_weather_table(pg_url=test_database.pg_url)
     postgres_utilities.create_star_table(pg_url=test_database.pg_url)
     actual = stars.get_star_forecast(
-        latitude=LATITUDE,
-        longitude=LONGITUDE,
-        api_key=API_KEY,
+        latitude=latitude,
+        longitude=longitude,
+        api_key=api_key,
         database_url=test_database.pg_url,
     )
     assert len(actual["daily_forecast"]) == len(darksky_json_response["daily"]["data"])

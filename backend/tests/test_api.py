@@ -3,7 +3,7 @@ import json
 from rogue_sky import darksky, postgres_utilities
 
 
-def test_empty_db(backend_api_client):
+def test_client(backend_api_client):
     response = backend_api_client.get("/")
     assert response.status_code == 200
 

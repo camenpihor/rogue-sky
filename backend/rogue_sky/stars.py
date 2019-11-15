@@ -227,13 +227,14 @@ def _serialize(predictions, weather_forecast):
             },
         }
     """
-    star_forecast = weather_forecast.copy()
     _logger.info(
         "(%s, %s, %s): Serializing to API output...",
         predictions[0]["latitude"],
         predictions[0]["longitude"],
         predictions[0]["queried_date_utc"],
     )
+    star_forecast = weather_forecast.copy()
+
     locator = geopy.geocoders.Nominatim(user_agent="rogue_sky")
     location = locator.reverse(
         f"{star_forecast['latitude']}, {star_forecast['longitude']}"
@@ -286,6 +287,12 @@ def get_star_forecast(latitude, longitude, api_key, database_url):
         longitude,
         queried_date_utc,
     )
+    weather_forecast = darksky.get_weather_forecast(
+        latitude=latitude,
+        longitude=longitude,
+        api_key=api_key,
+        database_url=database_url,
+    )
     predictions = _from_database(
         latitude=latitude,
         longitude=longitude,
@@ -293,12 +300,6 @@ def get_star_forecast(latitude, longitude, api_key, database_url):
         database_url=database_url,
     )
     if not predictions:  # list is empty
-        weather_forecast = darksky.get_weather_forecast(
-            latitude=latitude,
-            longitude=longitude,
-            api_key=api_key,
-            database_url=database_url,
-        )
         predictions = _from_weather(weather_forecast=weather_forecast)
         _to_database(predictions=predictions, database_url=database_url)
     return _serialize(predictions=predictions, weather_forecast=weather_forecast)
