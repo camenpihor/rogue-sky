@@ -307,21 +307,10 @@ def _serialize(response):
         JSON-parseable nested dictionary containing the 8-day daily weather
         forecast.
         {
-            "0": {
-                "latitude": 42.3601,
-                "longitude": -71.0589,
-                "queried_date_utc": "2019-01-01",
-                "weather_date_utc": "2019-11-10",
-                "weather_json": {...},
-            },
-            "1": {
-                "latitude": 42.3601,
-                "longitude": -71.0589,
-                "queried_date_utc": "2019-01-01",
-                "weather_date_utc": "2019-11-11",
-                "weather_json": {...},
-            },
-            ...
+            "latitude": 47.6062,
+            "longitude": -122.3321,
+            "queried_date_utc": "2019-11-15",
+            "daily_forecast": [{daily_weather}]
         }
     """
     _logger.info(
@@ -331,15 +320,13 @@ def _serialize(response):
         response[0]["queried_date_utc"],
     )
 
-    def parse(weather):
-        return {
-            key: json.loads(value) if key == "weather_json" else value
-            for key, value in weather.items()
-        }
-
     return {
-        str(day_idx): parse(daily_weather)
-        for day_idx, daily_weather in enumerate(response)
+        "latitude": response[0]["latitude"],
+        "longitude": response[0]["longitude"],
+        "queried_date_utc": response[0]["queried_date_utc"],
+        "daily_forecast": [
+            json.loads(daily_weather["weather_json"]) for daily_weather in response
+        ],
     }
 
 
@@ -363,21 +350,10 @@ def get_weather_forecast(latitude, longitude, api_key, database_url):
         JSON-parseable nested dictionary containing the 8-day daily weather
         forecast.
         {
-            0: {
-                "latitude": 42.3601,
-                "longitude": -71.0589,
-                "queried_date_utc": "2019-01-01",
-                "weather_date_utc": "2019-11-10",
-                "weather_json": weather_json,
-            },
-            1: {
-                "latitude": 42.3601,
-                "longitude": -71.0589,
-                "queried_date_utc": "2019-01-01",
-                "weather_date_utc": "2019-11-11",
-                "weather_json": weather_json,
-            },
-            ...
+            "latitude": 47.6062,
+            "longitude": -122.3321,
+            "queried_date_utc": "2019-11-15",
+            "daily_forecast": [{daily_weather}]
         }
     """
     queried_date_utc = arrow.get().strftime("%Y-%m-%d")

@@ -7,12 +7,12 @@ JSON.
 import logging
 
 import arrow
+import geopy
 import numpy as np
 
 from . import darksky, postgres_utilities
 
 DATE_FORMAT = "%Y-%m-%d"
-
 
 _logger = logging.getLogger(__name__)
 
@@ -140,21 +140,10 @@ def _from_weather(weather_forecast):
     ----------
     weather_forecast : dict
         {
-            0: {
-                "latitude": 42.3601,
-                "longitude": -71.0589,
-                "queried_date_utc": "2019-01-01",
-                "weather_date_utc": "2019-11-10",
-                "weather_json": weather_json,
-            },
-            1: {
-                "latitude": 42.3601,
-                "longitude": -71.0589,
-                "queried_date_utc": "2019-01-01",
-                "weather_date_utc": "2019-11-11",
-                "weather_json": weather_json,
-            },
-            ...
+            "latitude": 47.6062,
+            "longitude": -122.3321,
+            "queried_date_utc": "2019-11-15",
+            "daily_forecast": [{daily_weather}]
         }
 
     Returns
@@ -167,7 +156,6 @@ def _from_weather(weather_forecast):
                 longitude: -71.0589,
                 queried_date_utc: "2019-01-01",
                 weather_date_utc: "2019-01-01",
-                model_version: "0.1.0",
                 prediction: 0.7,
             },
             ...
@@ -175,20 +163,22 @@ def _from_weather(weather_forecast):
     """
     cloud_cover = np.array(
         [
-            daily_weather["weather_json"]["cloud_cover_pct"]
-            for daily_weather in weather_forecast.values()
+            daily_weather["cloud_cover_pct"]
+            for daily_weather in weather_forecast["daily_forecast"]
         ]
     )
-    predictions = predict_visibility(cloud_cover=cloud_cover)
     return [
         {
-            "latitude": daily_weather["latitude"],
-            "longitude": daily_weather["longitude"],
-            "queried_date_utc": daily_weather["queried_date_utc"],
+            "latitude": weather_forecast["latitude"],
+            "longitude": weather_forecast["longitude"],
+            "queried_date_utc": weather_forecast["queried_date_utc"],
             "weather_date_utc": daily_weather["weather_date_utc"],
             "prediction": star_visibility,
         }
-        for daily_weather, star_visibility in zip(weather_forecast.values(), predictions)
+        for daily_weather, star_visibility in zip(
+            weather_forecast["daily_forecast"],
+            predict_visibility(cloud_cover=cloud_cover),
+        )
     ]
 
 
@@ -205,28 +195,16 @@ def _serialize(predictions, weather_forecast):
                 longitude: -71.0589,
                 queried_date_utc: "2019-01-01",
                 weather_date_utc: "2019-01-01",
-                model_version: "0.1.0",
                 prediction: 0.7,
             },
             ...
         ]
     weather_forecast : dict(dict)
         {
-            "0": {
-                "latitude": 42.3601,
-                "longitude": -71.0589,
-                "queried_date_utc": "2019-01-01",
-                "weather_date_utc": "2019-11-10",
-                "weather_json": {...},
-            },
-            "1": {
-                "latitude": 42.3601,
-                "longitude": -71.0589,
-                "queried_date_utc": "2019-01-01",
-                "weather_date_utc": "2019-11-11",
-                "weather_json": {...},
-            },
-            ...
+            "latitude": 47.6062,
+            "longitude": -122.3321,
+            "queried_date_utc": "2019-11-15",
+            "daily_forecast": [{daily_weather}]
         }
 
     Returns
@@ -235,37 +213,39 @@ def _serialize(predictions, weather_forecast):
         JSON-parseable nested dictionary containing the 8-day daily weather
         forecast.
         {
-            "0": {
-                "latitude": 42.3601,
-                "longitude": -71.0589,
-                "queried_date_utc": "2019-01-01",
-                "weather_date_utc": "2019-11-10",
-                "prediction": 0.7,
-                "weather_json": {...},
+            "latitude": 42.3601,
+            "longitude": -71.0589,
+            "city": "Seattle",
+            "state": "Washington",
+            "queried_date_utc": "2019-01-01",
+            "daily_forecast": {
+                [
+                    <weather info>,
+                    "star_visibility": 0.7
+                ],
+                ...
             },
-            "1": {
-                "latitude": 42.3601,
-                "longitude": -71.0589,
-                "queried_date_utc": "2019-01-01",
-                "weather_date_utc": "2019-11-11",
-                "prediction": 0.7,
-                "weather_json": {...},
-            },
-            ...
         }
     """
+    star_forecast = weather_forecast.copy()
     _logger.info(
         "(%s, %s, %s): Serializing to API output...",
         predictions[0]["latitude"],
         predictions[0]["longitude"],
         predictions[0]["queried_date_utc"],
     )
-    star_forecast = {
-        str(day_idx): daily_prediction
-        for day_idx, daily_prediction in enumerate(predictions)
-    }
-    for day_idx, daily_prediction in star_forecast.items():
-        daily_prediction["weather_json"] = weather_forecast[day_idx]["weather_json"]
+    locator = geopy.geocoders.Nominatim(user_agent="rogue_sky")
+    location = locator.reverse(
+        f"{star_forecast['latitude']}, {star_forecast['longitude']}"
+    ).raw
+
+    star_forecast["city"] = location["address"]["city"]
+    star_forecast["state"] = location["address"]["state"]
+
+    zipped = zip(star_forecast["daily_forecast"], predictions)
+    for day_forecast, star_visibility in zipped:
+        day_forecast["star_visibility"] = star_visibility["prediction"]
+
     return star_forecast
 
 
@@ -283,7 +263,21 @@ def get_star_forecast(latitude, longitude, api_key, database_url):
 
     Returns
     -------
-    None
+    dict
+        {
+            "latitude": 42.3601,
+            "longitude": -71.0589,
+            "city": "Seattle",
+            "state": "Washington",
+            "queried_date_utc": "2019-01-01",
+            "daily_forecast": {
+                [
+                    <weather info>,
+                    "star_visibility": 0.7
+                ],
+                ...
+            },
+        }
     """
     queried_date_utc = arrow.get().strftime("%Y-%m-%d")
     _logger.info(

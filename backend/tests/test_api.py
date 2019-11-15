@@ -27,8 +27,8 @@ def test_weather_forecast(
     assert response.status_code == 200
 
     actual = json.loads(response.data)
-    assert len(actual) == 8
-    assert set(actual["0"]["weather_json"].keys()) == set(
+    assert len(actual["daily_forecast"]) == 8
+    assert set(actual["daily_forecast"][0].keys()) == set(
         darksky.DAILY_WEATHER_MAPPING.keys()
     )
 
@@ -52,15 +52,10 @@ def test_star_forecast(
     assert response.status_code == 200
 
     actual = json.loads(response.data)
-    assert len(actual) == 8
-    assert set(actual["0"].keys()) == set(
-        [
-            "latitude",
-            "longitude",
-            "weather_date_utc",
-            "queried_date_utc",
-            "prediction",
-            "weather_json",
-        ]
+    assert len(actual["daily_forecast"]) == 8
+    assert set(actual.keys()) == set(
+        ["latitude", "longitude", "queried_date_utc", "daily_forecast", "city", "state"]
     )
-    assert set(actual["0"]["weather_json"]) == set(darksky.DAILY_WEATHER_MAPPING.keys())
+    assert set(actual["daily_forecast"][0].keys()) == set(
+        list(darksky.DAILY_WEATHER_MAPPING.keys()) + ["star_visibility"]
+    )

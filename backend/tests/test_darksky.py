@@ -71,8 +71,13 @@ def test_to_database(test_database, parsed_darksky_forecast):
 def test_serialize(parsed_darksky_forecast):
     actual = darksky._serialize(response=parsed_darksky_forecast)
     assert isinstance(actual, dict)
-    assert len(actual) == len(parsed_darksky_forecast)
-    assert isinstance(actual["0"]["weather_json"], dict)
+    assert len(actual["daily_forecast"]) == len(parsed_darksky_forecast)
+    assert set(actual.keys()) == set(
+        ["latitude", "longitude", "queried_date_utc", "daily_forecast"]
+    )
+    assert set(actual["daily_forecast"][0].keys()) == set(
+        darksky.DAILY_WEATHER_MAPPING.keys()
+    )
 
 
 def test_get_weather_forecast(requests_mock, test_database, darksky_json_response):
@@ -84,9 +89,11 @@ def test_get_weather_forecast(requests_mock, test_database, darksky_json_respons
         api_key=API_KEY,
         database_url=test_database.pg_url,
     )
-    assert len(actual) == len(darksky_json_response["daily"]["data"])
+    assert len(actual["daily_forecast"]) == len(darksky_json_response["daily"]["data"])
     assert isinstance(actual, dict)
-    assert isinstance(json.dumps(actual), str)  # is json-serializable
+    assert set(actual["daily_forecast"][0].keys()) == set(
+        darksky.DAILY_WEATHER_MAPPING.keys()
+    )
 
 
 def test_parse_darksky_response(darksky_json_response):
