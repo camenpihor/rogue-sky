@@ -12,6 +12,7 @@ CORS(app, resources={"/api/*": {"origins": "http://localhost:8080"},})
 
 app.config.from_object("rogue_sky.config.DevelopmentConfig")
 logging.basicConfig(level=logging.INFO)
+_logger = logging.getLogger(__name__)
 
 
 def parse_address(address):
@@ -44,26 +45,34 @@ def ping_test():
     return "Success"
 
 
+@app.route("/api/coordinates/<query>")
+def get_coordinates(query):
+    """Get coordinates from query."""
+    _logger.info("Getting coordinates for {query}".format(query=query))
+    latitude, longitude = parse_address(address=query)
+    return {"latitude": latitude, "longitude": longitude}
+
+
 @app.route("/api/weather/<latitude>,<longitude>")
 def weather_forecast(latitude, longitude):
     """Get daily weather forecast for location."""
-    latitude = float(latitude)
-    longitude = float(longitude)
     return darksky.get_weather_forecast(
-        latitude=latitude,
-        longitude=longitude,
+        latitude=float(latitude),
+        longitude=float(longitude),
         api_key=app.config["DARKSKY_API_KEY"],
         database_url=app.config["DATABASE_URL"],
     )
 
 
-@app.route("/api/stars/<address>")
-def star_visibility_forecast(address):
+@app.route("/api/stars/<latitude>/<longitude>")
+def star_visibility_forecast(latitude, longitude):
     """Get daily star visibility forecast for location."""
-    latitude, longitude = parse_address(address=address)
+    _logger.info(
+        "Getting star forecast for ({lat},{lon})".format(lat=latitude, lon=longitude)
+    )
     return stars.get_star_forecast(
-        latitude=latitude,
-        longitude=longitude,
+        latitude=float(latitude),
+        longitude=float(longitude),
         api_key=app.config["DARKSKY_API_KEY"],
         database_url=app.config["DATABASE_URL"],
     )

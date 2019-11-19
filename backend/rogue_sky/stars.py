@@ -240,8 +240,11 @@ def _serialize(predictions, weather_forecast):
         f"{star_forecast['latitude']}, {star_forecast['longitude']}"
     ).raw
 
-    star_forecast["city"] = location["address"]["city"]
-    star_forecast["state"] = location["address"]["state"]
+    if "city" in location["address"]:
+        star_forecast["city"] = location["address"]["city"]
+    else:
+        star_forecast["city"] = location["address"]["town"]
+    star_forecast["state"] = location["address"].get("state", None)
 
     zipped = zip(star_forecast["daily_forecast"], predictions)
     for day_forecast, star_visibility in zipped:

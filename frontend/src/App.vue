@@ -1,17 +1,17 @@
 <template>
   <div id="app">
-    <p>Hai</p>
-    <SearchForecast />
+    <SearchBar />
+    <router-view/>
   </div>
 </template>
 
 <script>
-import SearchForecast from "./components/SearchForecast.vue";
+import SearchBar from "./components/SearchBar.vue";
 
 export default {
   name: "app",
   components: {
-    SearchForecast
+    SearchBar
   }
 };
 </script>
