@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 import os
 import subprocess
 from urllib.parse import urlparse
@@ -17,8 +18,8 @@ def _create_db(database_url):
 
     commands = [
         f"DROP DATABASE IF EXISTS {database_name}",
-        f"CREATE DATABASE {database_name}",
         f"DROP ROLE IF EXISTS {username}",
+        f"CREATE DATABASE {database_name}",
         f"CREATE ROLE {username} LOGIN PASSWORD '{password}'",
         f"GRANT ALL PRIVILEGES ON DATABASE {database_name} TO {username}",
     ]
