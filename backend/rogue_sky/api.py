@@ -48,7 +48,7 @@ def ping_test():
 @app.route("/api/coordinates/<query>")
 def get_coordinates(query):
     """Get coordinates from query."""
-    _logger.info("Getting coordinates for {query}".format(query=query))
+    _logger.info("Getting coordinates for %s", query)
     latitude, longitude = parse_address(address=query)
     return {"latitude": latitude, "longitude": longitude}
 
@@ -67,9 +67,7 @@ def weather_forecast(latitude, longitude):
 @app.route("/api/stars/<latitude>/<longitude>")
 def star_visibility_forecast(latitude, longitude):
     """Get daily star visibility forecast for location."""
-    _logger.info(
-        "Getting star forecast for ({lat},{lon})".format(lat=latitude, lon=longitude)
-    )
+    _logger.info("Getting star forecast for (%s, %s)", latitude, longitude)
     return stars.get_star_forecast(
         latitude=float(latitude),
         longitude=float(longitude),
