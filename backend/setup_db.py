@@ -37,6 +37,7 @@ def setup_db():
 
     print("Creating weather table in production...")
     postgres_utilities.create_weather_table(pg_url=DATABASE_URL)
+    postgres_utilities.create_star_table(pg_url=DATABASE_URL)
 
     print("Success.")
 
