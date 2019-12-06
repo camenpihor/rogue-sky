@@ -1,0 +1,36 @@
+Metadata-Version: 1.0
+Name: rogue-sky
+Version: 0.1.0
+Summary: Get daily predictions for star visibility anywhere in the US
+Home-page: UNKNOWN
+Author: Camen
+Author-email: camenpihor@gmail.com
+License: UNKNOWN
+Description: 
+        # Backend
+        
+        ## Installation
+        
+        1. `cp .sample_env .env` copy and and fill out the anything in `<>` in the .env file
+            1. `DARKSKY_API_KEY` DarkSky secret key from your [DarkSky developer account](https://darksky.net/dev/account)
+            2. `DATABASE_URL` postgres database url to be created and used for development
+            3. `TEST_DATABASE_URL` postgres database url to be created and used for tests
+        2. `set -o allexport && source .env && set +o allexport` to export environment variables
+        3. `pip install -r requirements.txt` to install requirements
+        4. `python setup.py install` to install package
+        5. `scripts/setup-db` to set up production and test databases
+        6. `scripts/test` to verify install
+        
+        ## Examples
+        
+        Check out `examples/playing_around.ipynb`!
+        
+        ## TODOs
+        
+        - geopy is slow :(
+        - is there a faster/cleaner address geopy parser?
+        - is there another geopy-like thing? maybe just hit google maps api?
+        - how to best parse address
+        - should I return city, state, or entire address?
+        
+Platform: UNKNOWN
