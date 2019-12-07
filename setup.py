@@ -1,4 +1,4 @@
-"""Packaging for the amex-risk library."""
+"""Packaging for the rogue-sky library."""
 from setuptools import find_packages, setup
 
 
