@@ -12,6 +12,7 @@ import json
 import logging
 
 import arrow
+import geopy
 import requests
 
 from . import postgres_utilities
@@ -378,3 +379,27 @@ def get_weather_forecast(latitude, longitude, api_key, database_url):
         )
         _to_database(response=response, database_url=database_url)
     return _serialize(response=response)
+
+
+def parse_address(address):
+    """Parse the adderss into coordinates.
+
+    Parameters
+    ----------
+    address : str
+
+    Returns
+    -------
+    tuple
+        `(latitude, longitude)`
+    """
+    if address and address != "null":
+        try:
+            latitude, longitude = map(float, address.split(","))
+            return latitude, longitude
+        except ValueError:
+            geo_locator = geopy.geocoders.Nominatim(user_agent="rogue_sky")
+            location = geo_locator.geocode(address)
+
+            return location.latitude, location.longitude
+    raise ValueError("Could not parse {address}")

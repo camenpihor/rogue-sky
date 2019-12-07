@@ -2,6 +2,7 @@
 # requests-mock package creates a pytest fixture, `requests_mock`
 import json
 
+import numpy as np
 import pytest
 import requests
 
@@ -156,3 +157,15 @@ def test_from_database_round_coordinates(test_database, parsed_darksky_forecast)
     assert (
         actual == parsed_darksky_forecast
     ), "outputs from `_from_darksky` and `_from_database` are not the same"
+
+
+def test_parse_address():
+    latitude, longitude = (47.6062, -122.3321)
+    actual = darksky.parse_address(f"{latitude}, {longitude}")
+    assert actual == (latitude, longitude)
+
+    actual = darksky.parse_address(f"{latitude},{longitude}")
+    assert actual == (latitude, longitude)
+
+    actual = darksky.parse_address("Seattle, WA")
+    np.testing.assert_array_almost_equal(actual, (latitude, longitude), decimal=2)
