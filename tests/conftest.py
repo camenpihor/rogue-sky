@@ -7,8 +7,6 @@ import psycopg2
 from psycopg2 import sql
 import pytest
 
-from rogue_sky import api
-
 PG_URL = os.environ["TEST_DATABASE_URL"]
 
 
@@ -98,11 +96,3 @@ def parsed_star_visbility_forecast():
             "tests.resources", "test_parsed_star_visibility_forecast.json"
         )
     )
-
-
-@pytest.fixture
-def backend_api_client(scope="method"):
-    api.app.config.from_object("rogue_sky.config.TestingConfig")
-
-    with api.app.test_client() as client:
-        yield client

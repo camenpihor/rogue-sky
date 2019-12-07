@@ -1,10 +1,6 @@
 arrow ~= 0.15
-click ~= 7.0
-Flask ~= 1.1
-flask-cors ~= 3.0
 geopy ~= 1.20
 numpy ~= 1.17
 psycopg2-binary ~= 2.8
 requests ~= 2.22
 sqlparse ~= 0.3
-waitress ~= 1.3
