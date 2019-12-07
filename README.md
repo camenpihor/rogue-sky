@@ -7,8 +7,8 @@
     2. `DATABASE_URL` postgres database url to be created and used for development
     3. `TEST_DATABASE_URL` postgres database url to be created and used for tests
 2. `set -o allexport && source .env && set +o allexport` to export environment variables
-3. `pip install -r requirements.txt` to install requirements
-4. `python setup.py install` to install package
+3. `python setup.py install` to install package
+4. `pip install -r requirements.testing.in` to install testing requirements
 5. `scripts/setup-db` to set up production and test databases
 6. `scripts/test` to verify install
 
