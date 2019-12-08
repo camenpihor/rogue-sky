@@ -173,7 +173,7 @@ def _from_weather(weather_forecast):
             "longitude": weather_forecast["longitude"],
             "queried_date_utc": weather_forecast["queried_date_utc"],
             "weather_date_utc": daily_weather["weather_date_utc"],
-            "prediction": star_visibility,
+            "prediction": np.round(star_visibility, 2),
         }
         for daily_weather, star_visibility in zip(
             weather_forecast["daily_forecast"],
