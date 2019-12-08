@@ -63,7 +63,7 @@ def darksky_json_response():
 def parsed_darksky_forecast():
     """A parsed DarkSky forecast.
 
-    Parsed with rogue_sky.backend.darksky._parse_darksky_response()
+    Parsed with rogue_sky.darksky._parse_darksky_response()
     """
     return json.loads(
         pkg_resources.resource_string(
@@ -76,7 +76,7 @@ def parsed_darksky_forecast():
 def serialized_weather_forecast():
     """A serialized daily weather forecast.
 
-    Serialized with rogue_sky.backend.darksky._serialize()
+    Serialized with rogue_sky.darksky._serialize()
     """
     return json.loads(
         pkg_resources.resource_string(
@@ -89,7 +89,7 @@ def serialized_weather_forecast():
 def parsed_star_visbility_forecast():
     """A parsed star visibility forecast.
 
-    Parsed with rogue_sky.backend.stars._from_weather()
+    Parsed with rogue_sky.stars._from_weather()
     """
     return json.loads(
         pkg_resources.resource_string(

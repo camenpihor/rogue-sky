@@ -118,10 +118,10 @@ def test_parse_darksky_response(darksky_json_response):
 
     # tests parse()
     assert weather_json["weather_date_utc"] == "2019-11-10"
-    assert weather_json["sunrise_time_utc"] == "2019-11-10T11:30:00+00:00"
-    assert weather_json["sunset_time_utc"] == "2019-11-10T21:29:00+00:00"
-    assert weather_json["temperature_min_time_utc"] == "2019-11-10T06:55:00+00:00"
-    assert weather_json["temperature_max_time_utc"] == "2019-11-10T19:51:00+00:00"
+    assert weather_json["sunrise_time_utc"] == "2019-11-10T15:09:00+00:00"
+    assert weather_json["sunset_time_utc"] == "2019-11-11T00:41:00+00:00"
+    assert weather_json["temperature_min_time_utc"] == "2019-11-11T08:00:00+00:00"
+    assert weather_json["temperature_max_time_utc"] == "2019-11-10T21:56:00+00:00"
     assert weather_json["precip_type"] is None
 
 
@@ -132,9 +132,9 @@ def test_from_database(test_database, parsed_darksky_forecast):
     )
 
     actual = darksky._from_database(
-        latitude=42.3601,
-        longitude=-71.0589,
-        queried_date_utc="2019-11-10",
+        latitude=47.6062,
+        longitude=-122.3321,
+        queried_date_utc="2019-12-08",
         database_url=test_database.pg_url,
     )
     assert (
@@ -149,9 +149,9 @@ def test_from_database_round_coordinates(test_database, parsed_darksky_forecast)
     )
 
     actual = darksky._from_database(
-        latitude=42.36,  # round latitude to 2 decimal places
-        longitude=-71.06,  # round longitude to 2 decimal places
-        queried_date_utc="2019-11-10",
+        latitude=47.61,  # round latitude to 2 decimal places
+        longitude=-122.33,  # round longitude to 2 decimal places
+        queried_date_utc="2019-12-08",
         database_url=test_database.pg_url,
     )
     assert (

@@ -43,6 +43,8 @@ DAILY_WEATHER_MAPPING = {
     "temperature_min_time_utc": "temperatureMinTime",
     "temperature_max_f": "temperatureMax",
     "temperature_max_time_utc": "temperatureMaxTime",
+    "icon": "icon",
+    "summary": "summary",
 }
 DATE_FORMAT = "%Y-%m-%d"
 

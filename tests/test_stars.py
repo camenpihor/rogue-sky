@@ -82,7 +82,7 @@ def test_from_database(test_database, parsed_star_visbility_forecast):
     actual = stars._from_database(
         latitude=47.6062,
         longitude=-122.3321,
-        queried_date_utc="2019-11-14",
+        queried_date_utc="2019-12-08",
         database_url=test_database.pg_url,
     )
     assert actual == parsed_star_visbility_forecast
@@ -97,7 +97,7 @@ def test_from_database_round_coordinates(test_database, parsed_star_visbility_fo
     actual = stars._from_database(
         latitude=47.61,  # round latitude to 2 decimal places
         longitude=-122.33,  # round longitude to 2 decimal places
-        queried_date_utc="2019-11-14",
+        queried_date_utc="2019-12-08",
         database_url=test_database.pg_url,
     )
     assert actual == parsed_star_visbility_forecast
