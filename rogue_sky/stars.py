@@ -235,7 +235,7 @@ def _serialize(predictions, weather_forecast):
     )
     star_forecast = weather_forecast.copy()
 
-    locator = geopy.geocoders.Nominatim(user_agent="rogue_sky")
+    locator = geopy.geocoders.Nominatim(user_agent="rogue_sky", timeout=3)
     location = locator.reverse(
         f"{star_forecast['latitude']}, {star_forecast['longitude']}"
     ).raw

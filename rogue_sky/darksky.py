@@ -400,7 +400,7 @@ def parse_address(address):
             latitude, longitude = map(float, address.split(","))
             return latitude, longitude
         except ValueError:
-            geo_locator = geopy.geocoders.Nominatim(user_agent="rogue_sky")
+            geo_locator = geopy.geocoders.Nominatim(user_agent="rogue_sky", timeout=3)
             location = geo_locator.geocode(address)
 
             return location.latitude, location.longitude
