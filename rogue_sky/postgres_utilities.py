@@ -1,8 +1,10 @@
 """Utilities for accessing the PostgreSQL database."""
 from contextlib import contextmanager
 import logging
-import pkg_resources
+import subprocess
+from urllib.parse import urlparse
 
+import pkg_resources
 import psycopg2
 from psycopg2 import sql
 from psycopg2.extras import RealDictCursor
@@ -186,3 +188,47 @@ def batch_from_postgres(latitude, longitude, queried_date_utc, table_name, pg_ur
     with get_cursor(pg_url, cursor_factory=RealDictCursor) as cursor:
         cursor.execute(select_query)
         return cursor.fetchall()
+
+
+def _create_db(database_url):
+    parsed_url = urlparse(database_url)
+
+    database_name = parsed_url.path[1:]  # strip the leading slash
+    password = parsed_url.password
+    username = parsed_url.username
+
+    commands = [
+        f"DROP DATABASE IF EXISTS {database_name}",
+        f"DROP ROLE IF EXISTS {username}",
+        f"CREATE DATABASE {database_name}",
+        f"CREATE ROLE {username} LOGIN PASSWORD '{password}'",
+        f"GRANT ALL PRIVILEGES ON DATABASE {database_name} TO {username}",
+    ]
+
+    for command in commands:
+        subprocess.check_call(["psql", "postgres", "-c", command, "-e"])
+
+
+def setup_db(test_database_url, database_url):
+    """Set up the test and production databases.
+
+    test:
+        1. create role
+        2. create database
+
+    production:
+        1. create role
+        2. create database
+        3. create tables
+    """
+    _logger.info("Creating test database...")
+    _create_db(database_url=test_database_url)
+
+    _logger.info("Creating production...")
+    _create_db(database_url=database_url)
+
+    _logger.info("Creating weather table in production...")
+    create_weather_table(pg_url=database_url)
+    create_star_table(pg_url=database_url)
+
+    _logger.info("Success.")
