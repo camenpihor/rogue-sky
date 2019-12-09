@@ -61,7 +61,7 @@ def _from_database(latitude, longitude, queried_date_utc, database_url):
                 latitude: 42.3601,
                 longitude: -71.0589,
                 queried_date_utc: "2019-01-01",
-                weather_date_utc: "2019-01-01",
+                weather_date_local: "2019-01-01",
                 prediction: 0.7,
             },
             ...
@@ -89,7 +89,9 @@ def _from_database(latitude, longitude, queried_date_utc, database_url):
             "latitude": decimal_to_float(decimal=daily_weather["latitude"]),
             "longitude": decimal_to_float(decimal=daily_weather["longitude"]),
             "queried_date_utc": date_to_string(date=daily_weather["queried_date_utc"]),
-            "weather_date_utc": date_to_string(date=daily_weather["weather_date_utc"]),
+            "weather_date_local": date_to_string(
+                date=daily_weather["weather_date_local"]
+            ),
             "prediction": decimal_to_float(decimal=daily_weather["prediction"]),
         }
         for daily_weather in result
@@ -155,7 +157,7 @@ def _from_weather(weather_forecast):
                 latitude: 42.3601,
                 longitude: -71.0589,
                 queried_date_utc: "2019-01-01",
-                weather_date_utc: "2019-01-01",
+                weather_date_local: "2019-01-01",
                 prediction: 0.7,
             },
             ...
@@ -172,7 +174,7 @@ def _from_weather(weather_forecast):
             "latitude": weather_forecast["latitude"],
             "longitude": weather_forecast["longitude"],
             "queried_date_utc": weather_forecast["queried_date_utc"],
-            "weather_date_utc": daily_weather["weather_date_utc"],
+            "weather_date_local": daily_weather["weather_date_local"],
             "prediction": np.round(star_visibility, 2),
         }
         for daily_weather, star_visibility in zip(
@@ -194,7 +196,7 @@ def _serialize(predictions, weather_forecast):
                 latitude: 42.3601,
                 longitude: -71.0589,
                 queried_date_utc: "2019-01-01",
-                weather_date_utc: "2019-01-01",
+                weather_date_local: "2019-01-01",
                 prediction: 0.7,
             },
             ...

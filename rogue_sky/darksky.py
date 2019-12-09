@@ -22,9 +22,9 @@ DARKSKY_URL = "https://api.darksky.net/forecast/{api_key}/{latitude},{longitude}
 
 # {database_column: darksky_column}
 DAILY_WEATHER_MAPPING = {
-    "weather_date_utc": "time",
-    "sunrise_time_utc": "sunriseTime",
-    "sunset_time_utc": "sunsetTime",
+    "weather_date_local": "time",
+    "sunrise_time_local": "sunriseTime",
+    "sunset_time_local": "sunsetTime",
     "moon_phase_pct": "moonPhase",
     "precip_intensity_avg_in_hr": "precipIntensity",
     "precip_intensity_max_in_hr": "precipIntensityMax",
@@ -40,9 +40,7 @@ DAILY_WEATHER_MAPPING = {
     "visibility_mi": "visibility",
     "ozone": "ozone",
     "temperature_min_f": "temperatureMin",
-    "temperature_min_time_utc": "temperatureMinTime",
     "temperature_max_f": "temperatureMax",
-    "temperature_max_time_utc": "temperatureMaxTime",
     "icon": "icon",
     "summary": "summary",
 }
@@ -103,7 +101,7 @@ def _parse_darksky_response(response_json, queried_date_utc):
                 latitude: 42.3601,
                 longitude: -71.0589,
                 queried_date_utc: "2019-01-01",
-                weather_date_utc: "2019-01-01",
+                weather_date_local: "2019-01-01",
                 weather_json: JSON({
                     ...
                 })
@@ -113,9 +111,10 @@ def _parse_darksky_response(response_json, queried_date_utc):
     """
     latitude = response_json["latitude"]
     longitude = response_json["longitude"]
+    timezone = response_json["timezone"]
 
     def parse_local_unix_date(local_date):
-        return arrow.get(local_date).to(response_json["timezone"]).strftime(DATE_FORMAT)
+        return arrow.get(local_date).strftime(DATE_FORMAT)
 
     def parse(data, key):
         value = data.get(key, None)
@@ -128,10 +127,8 @@ def _parse_darksky_response(response_json, queried_date_utc):
             if key in [
                 "sunriseTime",
                 "sunsetTime",
-                "temperatureMinTime",
-                "temperatureMaxTime",
             ]:
-                return arrow.get(value).isoformat()
+                return arrow.get(value).to(timezone).isoformat()
         return value
 
     return [
@@ -139,7 +136,7 @@ def _parse_darksky_response(response_json, queried_date_utc):
             "latitude": latitude,
             "longitude": longitude,
             "queried_date_utc": queried_date_utc,
-            "weather_date_utc": parse_local_unix_date(local_date=daily_weather["time"]),
+            "weather_date_local": parse_local_unix_date(local_date=daily_weather["time"]),
             "weather_json": json.dumps(
                 {
                     db_column: parse(data=daily_weather, key=darksky_key)
@@ -179,7 +176,7 @@ def _from_database(latitude, longitude, queried_date_utc, database_url):
                 latitude: 42.3601,
                 longitude: -71.0589,
                 queried_date_utc: "2019-01-01",
-                weather_date_utc: "2019-01-01",
+                weather_date_local: "2019-01-01",
                 weather_json: JSON({
                     ...
                 })
@@ -209,7 +206,7 @@ def _from_database(latitude, longitude, queried_date_utc, database_url):
             "latitude": decimal_to_float(decimal=daily_weather["latitude"]),
             "longitude": decimal_to_float(decimal=daily_weather["longitude"]),
             "queried_date_utc": date_to_string(date=daily_weather["queried_date_utc"]),
-            "weather_date_utc": date_to_string(date=daily_weather["weather_date_utc"]),
+            "weather_date_local": date_to_string(date=daily_weather["weather_date_local"]),
             "weather_json": json.dumps(daily_weather["weather_json"], sort_keys=True),
         }
         for daily_weather in result

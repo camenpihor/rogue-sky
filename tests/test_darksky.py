@@ -50,7 +50,13 @@ def test_from_darksky(requests_mock, darksky_json_response):
     assert isinstance(actual, list)
     assert isinstance(actual[0], dict)
     assert set(actual[0].keys()) == set(
-        ["latitude", "longitude", "queried_date_utc", "weather_date_utc", "weather_json"]
+        [
+            "latitude",
+            "longitude",
+            "queried_date_utc",
+            "weather_date_local",
+            "weather_json",
+        ]
     )
     assert isinstance(json.loads(actual[0]["weather_json"]), dict)
     assert set(json.loads(actual[0]["weather_json"]).keys()) == set(
@@ -104,12 +110,18 @@ def test_parse_darksky_response(darksky_json_response):
     assert isinstance(actual, list)
     assert len(actual) == len(darksky_json_response["daily"]["data"])
     assert set(actual[0].keys()) == set(
-        ["latitude", "longitude", "queried_date_utc", "weather_date_utc", "weather_json"]
+        [
+            "latitude",
+            "longitude",
+            "queried_date_utc",
+            "weather_date_local",
+            "weather_json",
+        ]
     )
     assert isinstance(actual[0]["weather_json"], str)
 
     # tests parse_local_unix_date()
-    assert actual[0]["weather_date_utc"] == "2019-11-10"
+    assert actual[0]["weather_date_local"] == "2019-11-10"
 
     # tests weather_json is json
     weather_json = json.loads(actual[0]["weather_json"])
@@ -117,11 +129,9 @@ def test_parse_darksky_response(darksky_json_response):
     assert set(weather_json.keys()) == set(darksky.DAILY_WEATHER_MAPPING.keys())
 
     # tests parse()
-    assert weather_json["weather_date_utc"] == "2019-11-10"
-    assert weather_json["sunrise_time_utc"] == "2019-11-10T15:09:00+00:00"
-    assert weather_json["sunset_time_utc"] == "2019-11-11T00:41:00+00:00"
-    assert weather_json["temperature_min_time_utc"] == "2019-11-11T08:00:00+00:00"
-    assert weather_json["temperature_max_time_utc"] == "2019-11-10T21:56:00+00:00"
+    assert weather_json["weather_date_local"] == "2019-11-10"
+    assert weather_json["sunrise_time_local"] == "2019-11-10T07:09:00-08:00"
+    assert weather_json["sunset_time_local"] == "2019-11-10T16:41:00-08:00"
     assert weather_json["precip_type"] is None
 
 
@@ -134,7 +144,7 @@ def test_from_database(test_database, parsed_darksky_forecast):
     actual = darksky._from_database(
         latitude=47.6062,
         longitude=-122.3321,
-        queried_date_utc="2019-12-08",
+        queried_date_utc="2019-12-09",
         database_url=test_database.pg_url,
     )
     assert (
@@ -151,7 +161,7 @@ def test_from_database_round_coordinates(test_database, parsed_darksky_forecast)
     actual = darksky._from_database(
         latitude=47.61,  # round latitude to 2 decimal places
         longitude=-122.33,  # round longitude to 2 decimal places
-        queried_date_utc="2019-12-08",
+        queried_date_utc="2019-12-09",
         database_url=test_database.pg_url,
     )
     assert (

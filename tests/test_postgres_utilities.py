@@ -19,7 +19,7 @@ def test_create_weather_table(test_database):
         "latitude",
         "longitude",
         "queried_date_utc",
-        "weather_date_utc",
+        "weather_date_local",
         "weather_json",
     ]
     assert set(actual_columns) == set(expected_columns)
@@ -41,7 +41,7 @@ def test_create_star_table(test_database):
         "latitude",
         "longitude",
         "queried_date_utc",
-        "weather_date_utc",
+        "weather_date_local",
         "prediction",
     ]
     assert set(actual_columns) == set(expected_columns)
