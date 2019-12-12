@@ -10,7 +10,7 @@ import arrow
 import geopy
 import numpy as np
 
-from . import darksky, postgres_utilities
+from . import darksky
 
 DATE_FORMAT = "%Y-%m-%d"
 
@@ -34,107 +34,6 @@ def predict_visibility(cloud_cover):
     return 1 - cloud_cover
 
 
-def _from_database(latitude, longitude, queried_date_utc, database_url):
-    """Get the star visibility forecast from the local database, if exists.
-
-    Check the local database for predictions at the provided lat-lon coordinates that was
-    retrieved today (queried_date_utc is today). If the visibility forecast for today
-    has not already been retrieved, return None.
-
-    Parameters
-    ----------
-    latitude : float
-        Latitude at which to get predictions.
-    longitude : float
-        Longitude at when to get predictions.
-    queried_date_utc : str
-        The query date (today) in UTC. This is created at initialization time.
-    database_url : str
-        Connection url to a postgres database.
-
-    Returns
-    -------
-    list(dict)
-        Should return the same type signature as `_from_weather()`.
-        [
-            {
-                latitude: 42.3601,
-                longitude: -71.0589,
-                queried_date_utc: "2019-01-01",
-                weather_date_local: "2019-01-01",
-                prediction: 0.7,
-            },
-            ...
-        ]
-    """
-    _logger.info(
-        "(%s, %s, %s): Checking database...", latitude, longitude, queried_date_utc,
-    )
-    result = postgres_utilities.batch_from_postgres(
-        latitude=latitude,
-        longitude=longitude,
-        queried_date_utc=queried_date_utc,
-        table_name="daily_star_visibility_forecast",
-        pg_url=database_url,
-    )
-
-    def date_to_string(date):
-        return date.strftime(DATE_FORMAT)
-
-    def decimal_to_float(decimal):
-        return float(decimal)
-
-    from_database = [
-        {
-            "latitude": decimal_to_float(decimal=daily_weather["latitude"]),
-            "longitude": decimal_to_float(decimal=daily_weather["longitude"]),
-            "queried_date_utc": date_to_string(date=daily_weather["queried_date_utc"]),
-            "weather_date_local": date_to_string(
-                date=daily_weather["weather_date_local"]
-            ),
-            "prediction": decimal_to_float(decimal=daily_weather["prediction"]),
-        }
-        for daily_weather in result
-    ]
-    if from_database:  # list is not empty
-        _logger.info(
-            "(%s, %s, %s): Found in database!", latitude, longitude, queried_date_utc
-        )
-    else:
-        _logger.info(
-            "(%s, %s, %s): Not found in database...",
-            latitude,
-            longitude,
-            queried_date_utc,
-        )
-    return from_database
-
-
-def _to_database(predictions, database_url):
-    """Persist the star visibilty forecast to the database at database_url.
-
-    Parameters
-    ----------
-    predictions : list(dict)
-        Each dict in the list is the star visibility prediction for a day. The keys of the
-        dictionary should match the columns of the `daily_star_visibility_forecast` table
-        in the database.
-    database_url : str
-        Connection url to a postgres database.
-    """
-    _logger.info(
-        "(%s, %s, %s): Persisting to database...",
-        predictions[0]["latitude"],
-        predictions[0]["longitude"],
-        predictions[0]["queried_date_utc"],
-    )
-    postgres_utilities.batch_to_postgres(
-        batch=predictions,
-        pg_url=database_url,
-        table_name="daily_star_visibility_forecast",
-    )
-
-
 def _from_weather(weather_forecast):
     """Get today's 8-day star visibility forecast from weather.
 
@@ -151,7 +50,6 @@ def _from_weather(weather_forecast):
     Returns
     -------
     list(dict)
-        Should return the same type signature as `_from_database()`.
         [
             {
                 latitude: 42.3601,
@@ -255,7 +153,7 @@ def _serialize(predictions, weather_forecast):
     return star_forecast
 
 
-def get_star_forecast(latitude, longitude, api_key, database_url):
+def get_star_forecast(latitude, longitude, api_key):
     """Get the 8-day weather forecast from cache, or the DarkSky API.
 
     Parameters
@@ -264,8 +162,6 @@ def get_star_forecast(latitude, longitude, api_key, database_url):
         Latitude at which to get weather.
     longitude : float
         Longitude at when to get weather.
-    database_url : str
-        Connection url to a postgres database.
 
     Returns
     -------
@@ -293,18 +189,7 @@ def get_star_forecast(latitude, longitude, api_key, database_url):
         queried_date_utc,
     )
     weather_forecast = darksky.get_weather_forecast(
-        latitude=latitude,
-        longitude=longitude,
-        api_key=api_key,
-        database_url=database_url,
+        latitude=latitude, longitude=longitude, api_key=api_key,
     )
-    predictions = _from_database(
-        latitude=latitude,
-        longitude=longitude,
-        queried_date_utc=queried_date_utc,
-        database_url=database_url,
-    )
-    if not predictions:  # list is empty
-        predictions = _from_weather(weather_forecast=weather_forecast)
-        _to_database(predictions=predictions, database_url=database_url)
+    predictions = _from_weather(weather_forecast=weather_forecast)
     return _serialize(predictions=predictions, weather_forecast=weather_forecast)

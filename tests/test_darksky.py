@@ -6,7 +6,7 @@ import numpy as np
 import pytest
 import requests
 
-from rogue_sky import darksky, postgres_utilities
+from rogue_sky import darksky
 
 API_KEY = "TEST"
 LATITUDE = 1.0
@@ -64,17 +64,6 @@ def test_from_darksky(requests_mock, darksky_json_response):
     )
 
 
-def test_to_database(test_database, parsed_darksky_forecast):
-    postgres_utilities.create_weather_table(pg_url=test_database.pg_url)
-    darksky._to_database(
-        response=parsed_darksky_forecast, database_url=test_database.pg_url,
-    )
-    with test_database.get_cursor() as cursor:
-        cursor.execute("SELECT * FROM daily_weather_forecast")
-        actual = cursor.fetchall()
-    assert len(actual) == len(parsed_darksky_forecast)
-
-
 def test_serialize(parsed_darksky_forecast):
     actual = darksky._serialize(response=parsed_darksky_forecast)
     assert isinstance(actual, dict)
@@ -87,14 +76,10 @@ def test_serialize(parsed_darksky_forecast):
     )
 
 
-def test_get_weather_forecast(requests_mock, test_database, darksky_json_response):
+def test_get_weather_forecast(requests_mock, darksky_json_response):
     requests_mock.get(TEST_URL, json=darksky_json_response)
-    postgres_utilities.create_weather_table(pg_url=test_database.pg_url)
     actual = darksky.get_weather_forecast(
-        latitude=LATITUDE,
-        longitude=LONGITUDE,
-        api_key=API_KEY,
-        database_url=test_database.pg_url,
+        latitude=LATITUDE, longitude=LONGITUDE, api_key=API_KEY,
     )
     assert len(actual["daily_forecast"]) == len(darksky_json_response["daily"]["data"])
     assert isinstance(actual, dict)
@@ -133,40 +118,6 @@ def test_parse_darksky_response(darksky_json_response):
     assert weather_json["sunrise_time_local"] == "2019-11-10T07:09:00-08:00"
     assert weather_json["sunset_time_local"] == "2019-11-10T16:41:00-08:00"
     assert weather_json["precip_type"] is None
-
-
-def test_from_database(test_database, parsed_darksky_forecast):
-    postgres_utilities.create_weather_table(pg_url=test_database.pg_url)
-    darksky._to_database(
-        response=parsed_darksky_forecast, database_url=test_database.pg_url
-    )
-
-    actual = darksky._from_database(
-        latitude=47.6062,
-        longitude=-122.3321,
-        queried_date_utc="2019-12-09",
-        database_url=test_database.pg_url,
-    )
-    assert (
-        actual == parsed_darksky_forecast
-    ), "outputs from `_from_darksky` and `_from_database` are not the same"
-
-
-def test_from_database_round_coordinates(test_database, parsed_darksky_forecast):
-    postgres_utilities.create_weather_table(pg_url=test_database.pg_url)
-    darksky._to_database(
-        response=parsed_darksky_forecast, database_url=test_database.pg_url
-    )
-
-    actual = darksky._from_database(
-        latitude=47.61,  # round latitude to 2 decimal places
-        longitude=-122.33,  # round longitude to 2 decimal places
-        queried_date_utc="2019-12-09",
-        database_url=test_database.pg_url,
-    )
-    assert (
-        actual == parsed_darksky_forecast
-    ), "outputs from `_from_darksky` and `_from_database` are not the same"
 
 
 def test_parse_address():

@@ -1,6 +1,4 @@
 arrow ~= 0.15
 geopy ~= 1.20
 numpy ~= 1.17
-psycopg2-binary ~= 2.8
 requests ~= 2.22
-sqlparse ~= 0.3

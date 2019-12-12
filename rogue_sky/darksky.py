@@ -1,9 +1,8 @@
 """Get 8-day weather forecasts from DarkSky.
 
-Includes methods to get weather from DarkSky, persist/retrieve data to/from a local
-database, and repackage it for sending via JSON.
+Includes methods to get weather from DarkSky and repackaging for sending via JSON.
 
-The main use-case class is the `get_weather_forecast` method which retrieves the weather
+The main entry-point is the `get_weather_forecast` method which retrieves the weather
 forecast at aprovided lat-lon coordinate, and repackages it for sending via JSON.
 
 DarkSky API docs: https://darksky.net/dev/docs
@@ -15,12 +14,9 @@ import arrow
 import geopy
 import requests
 
-from . import postgres_utilities
-
-
 DARKSKY_URL = "https://api.darksky.net/forecast/{api_key}/{latitude},{longitude}"
 
-# {database_column: darksky_column}
+# {serialized_column: darksky_column}
 DAILY_WEATHER_MAPPING = {
     "weather_date_local": "time",
     "sunrise_time_local": "sunriseTime",
@@ -149,82 +145,6 @@ def _parse_darksky_response(response_json, queried_date_utc):
     ]
 
 
-def _from_database(latitude, longitude, queried_date_utc, database_url):
-    """Get the weather forecast from the local database, if exists.
-
-    Check the local database for weather at the provided lat-lon coordinates that was
-    retrieved today (queried_date_utc is today). If the weather forecast for today
-    has not already been retrieved, return None.
-
-    Parameters
-    ----------
-    latitude : float
-        Latitude at which to get weather.
-    longitude : float
-        Longitude at when to get weather.
-    queried_date_utc : str
-        The query date (today) in UTC. This is created at initialization time.
-    database_url : str
-        Connection url to a postgres database.
-
-    Returns
-    -------
-    list(dict)
-        Should return the same type signature as `_from_darksky()`.
-        [
-            {
-                latitude: 42.3601,
-                longitude: -71.0589,
-                queried_date_utc: "2019-01-01",
-                weather_date_local: "2019-01-01",
-                weather_json: JSON({
-                    ...
-                })
-            },
-            ...
-        ]
-    """
-    _logger.info(
-        "(%s, %s, %s): Checking database...", latitude, longitude, queried_date_utc,
-    )
-    result = postgres_utilities.batch_from_postgres(
-        latitude=latitude,
-        longitude=longitude,
-        queried_date_utc=queried_date_utc,
-        table_name="daily_weather_forecast",
-        pg_url=database_url,
-    )
-
-    def date_to_string(date):
-        return date.strftime(DATE_FORMAT)
-
-    def decimal_to_float(decimal):
-        return float(decimal)
-
-    from_database = [
-        {
-            "latitude": decimal_to_float(decimal=daily_weather["latitude"]),
-            "longitude": decimal_to_float(decimal=daily_weather["longitude"]),
-            "queried_date_utc": date_to_string(date=daily_weather["queried_date_utc"]),
-            "weather_date_local": date_to_string(date=daily_weather["weather_date_local"]),
-            "weather_json": json.dumps(daily_weather["weather_json"], sort_keys=True),
-        }
-        for daily_weather in result
-    ]
-    if from_database:  # list is not empty
-        _logger.info(
-            "(%s, %s, %s): Found in database!", latitude, longitude, queried_date_utc
-        )
-    else:
-        _logger.info(
-            "(%s, %s, %s): Not found in database...",
-            latitude,
-            longitude,
-            queried_date_utc,
-        )
-    return from_database
-
-
 def _from_darksky(latitude, longitude, queried_date_utc, api_key):
     """Get today's 8-day weather forecast from DarkSky.
 
@@ -242,7 +162,6 @@ def _from_darksky(latitude, longitude, queried_date_utc, api_key):
     Returns
     -------
     list(dict)
-        Should return the same type signature as `_from_database()`.
         [
             {
                 latitude: 42.3601,
@@ -267,29 +186,6 @@ def _from_darksky(latitude, longitude, queried_date_utc, api_key):
     )
     return _parse_darksky_response(
         response_json=response.json(), queried_date_utc=queried_date_utc
-    )
-
-
-def _to_database(response, database_url):
-    """Persist the weather forecast to the database at database_url.
-
-    Parameters
-    ----------
-    response : list(dict)
-        Each dict in the list is the weather prediction for a day. The keys of the
-        dictionary should match the columns of the `daily_weather_forecast` table in the
-        database.
-    database_url : str
-        Connection url to a postgres database.
-    """
-    _logger.info(
-        "(%s, %s, %s): Persisting to database...",
-        response[0]["latitude"],
-        response[0]["longitude"],
-        response[0]["queried_date_utc"],
-    )
-    postgres_utilities.batch_to_postgres(
-        batch=response, pg_url=database_url, table_name="daily_weather_forecast"
     )
 
 
@@ -330,8 +226,8 @@ def _serialize(response):
     }
 
 
-def get_weather_forecast(latitude, longitude, api_key, database_url):
-    """Get the 8-day weather forecast from cache, or the DarkSky API.
+def get_weather_forecast(latitude, longitude, api_key):
+    """Get the 8-day weather forecast from the DarkSky API.
 
     Parameters
     ----------
@@ -341,8 +237,6 @@ def get_weather_forecast(latitude, longitude, api_key, database_url):
         Longitude at when to get weather.
     api_key : str
         DarkSky secret developer key.
-    database_url : str
-        Connection url to a postgres database.
 
     Returns
     -------
@@ -363,20 +257,12 @@ def get_weather_forecast(latitude, longitude, api_key, database_url):
         longitude,
         queried_date_utc,
     )
-    response = _from_database(
+    response = _from_darksky(
         latitude=latitude,
         longitude=longitude,
         queried_date_utc=queried_date_utc,
-        database_url=database_url,
+        api_key=api_key,
     )
-    if not response:  # list is empty
-        response = _from_darksky(
-            latitude=latitude,
-            longitude=longitude,
-            queried_date_utc=queried_date_utc,
-            api_key=api_key,
-        )
-        _to_database(response=response, database_url=database_url)
     return _serialize(response=response)
 
 
