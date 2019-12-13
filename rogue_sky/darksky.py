@@ -12,6 +12,7 @@ import logging
 
 import arrow
 import geopy
+import numpy as np
 import requests
 
 DARKSKY_URL = "https://api.darksky.net/forecast/{api_key}/{latitude},{longitude}"
@@ -119,12 +120,10 @@ def _parse_darksky_response(response_json, queried_date_utc):
                 # `time` is returned by DarkSky in time local to the weather requested
                 return parse_local_unix_date(local_date=value)
             # these times are returned by DarkSky in UTC
-            # pylint: disable=bad-continuation
-            if key in [
-                "sunriseTime",
-                "sunsetTime",
-            ]:
+            if key in ("sunriseTime", "sunsetTime"):
                 return arrow.get(value).to(timezone).isoformat()
+            if key == "moonPhase":
+                value = 1 - np.abs(1 - (2 * value))
         return value
 
     return [
