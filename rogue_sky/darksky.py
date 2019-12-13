@@ -123,7 +123,7 @@ def _parse_darksky_response(response_json, queried_date_utc):
             if key in ("sunriseTime", "sunsetTime"):
                 return arrow.get(value).to(timezone).isoformat()
             if key == "moonPhase":
-                value = 1 - np.abs(1 - (2 * value))
+                value = np.round(1 - np.abs(1 - (2 * value)), 2)
         return value
 
     return [
