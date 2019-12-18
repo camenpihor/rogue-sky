@@ -12,7 +12,6 @@ import logging
 
 import arrow
 import geopy
-import numpy as np
 import requests
 
 DARKSKY_URL = "https://api.darksky.net/forecast/{api_key}/{latitude},{longitude}"
@@ -123,7 +122,7 @@ def _parse_darksky_response(response_json, queried_date_utc):
             if key in ("sunriseTime", "sunsetTime"):
                 return arrow.get(value).to(timezone).isoformat()
             if key == "moonPhase":
-                value = np.round(1 - np.abs(1 - (2 * value)), 2)
+                value = round(1 - abs(1 - (2 * value)), 2)
         return value
 
     return [
