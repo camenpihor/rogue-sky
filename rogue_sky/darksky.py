@@ -130,6 +130,7 @@ def _parse_darksky_response(response_json, queried_date_utc):
             "latitude": latitude,
             "longitude": longitude,
             "queried_date_utc": queried_date_utc,
+            "timezone": timezone,
             "weather_date_local": parse_local_unix_date(local_date=daily_weather["time"]),
             "weather_json": json.dumps(
                 {
@@ -218,6 +219,7 @@ def _serialize(response):
         "latitude": response[0]["latitude"],
         "longitude": response[0]["longitude"],
         "queried_date_utc": response[0]["queried_date_utc"],
+        "timezone": response[0]["timezone"],
         "daily_forecast": [
             json.loads(daily_weather["weather_json"]) for daily_weather in response
         ],

@@ -54,6 +54,7 @@ def test_from_darksky(requests_mock, darksky_json_response):
             "latitude",
             "longitude",
             "queried_date_utc",
+            "timezone",
             "weather_date_local",
             "weather_json",
         ]
@@ -69,7 +70,7 @@ def test_serialize(parsed_darksky_forecast):
     assert isinstance(actual, dict)
     assert len(actual["daily_forecast"]) == len(parsed_darksky_forecast)
     assert set(actual.keys()) == set(
-        ["latitude", "longitude", "queried_date_utc", "daily_forecast"]
+        ["latitude", "longitude", "queried_date_utc", "timezone", "daily_forecast"]
     )
     assert set(actual["daily_forecast"][0].keys()) == set(
         darksky.DAILY_WEATHER_MAPPING.keys()
@@ -99,6 +100,7 @@ def test_parse_darksky_response(darksky_json_response):
             "latitude",
             "longitude",
             "queried_date_utc",
+            "timezone",
             "weather_date_local",
             "weather_json",
         ]

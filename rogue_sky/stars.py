@@ -44,6 +44,7 @@ def _from_weather(weather_forecast):
             "latitude": 47.6062,
             "longitude": -122.3321,
             "queried_date_utc": "2019-11-15",
+            "timezone": "America/New_York",
             "daily_forecast": [{daily_weather}]
         }
 
@@ -104,6 +105,7 @@ def _serialize(predictions, weather_forecast):
             "latitude": 47.6062,
             "longitude": -122.3321,
             "queried_date_utc": "2019-11-15",
+            "timezone": "America/New_York",
             "daily_forecast": [{daily_weather}]
         }
 
@@ -118,6 +120,7 @@ def _serialize(predictions, weather_forecast):
             "city": "Seattle",
             "state": "Washington",
             "queried_date_utc": "2019-01-01",
+            "timezone": "America/New_York",
             "daily_forecast": {
                 [
                     <weather info>,
@@ -172,6 +175,7 @@ def get_star_forecast(latitude, longitude, api_key):
             "city": "Seattle",
             "state": "Washington",
             "queried_date_utc": "2019-01-01",
+            "timezone": "America/New_York",
             "daily_forecast": {
                 [
                     <weather info>,
