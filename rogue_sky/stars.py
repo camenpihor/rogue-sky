@@ -151,14 +151,18 @@ def _serialize(predictions, weather_forecast):
 
     zipped = zip(star_forecast["daily_forecast"], predictions)
     for day_forecast, star_visibility in zipped:
-        day_forecast["star_visibility"] = star_visibility["prediction"]
-        day_forecast["moonrise_time_local"] = moon.get_rise_time(
+        moon_rise_time = moon.get_rise_time(
             local_date=arrow.get(day_forecast["weather_date_local"])
             .replace(tzinfo=star_forecast["timezone"])
             .datetime,
             latitude=star_forecast["latitude"],
             longitude=star_forecast["longitude"],
         )
+
+        day_forecast["moonrise_time_local"] = (
+            arrow.get(moon_rise_time).isoformat() if moon_rise_time else moon_rise_time
+        )
+        day_forecast["star_visibility"] = star_visibility["prediction"]
 
     return star_forecast
 
