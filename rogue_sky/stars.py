@@ -10,7 +10,7 @@ import arrow
 import geopy
 import numpy as np
 
-from . import darksky
+from . import darksky, moon
 
 DATE_FORMAT = "%Y-%m-%d"
 
@@ -152,6 +152,13 @@ def _serialize(predictions, weather_forecast):
     zipped = zip(star_forecast["daily_forecast"], predictions)
     for day_forecast, star_visibility in zipped:
         day_forecast["star_visibility"] = star_visibility["prediction"]
+        day_forecast["moonrise_time_local"] = moon.get_rise_time(
+            local_date=arrow.get(day_forecast["weather_date_local"])
+            .replace(tzinfo=star_forecast["timezone"])
+            .datetime,
+            latitude=star_forecast["latitude"],
+            longitude=star_forecast["longitude"],
+        )
 
     return star_forecast
 

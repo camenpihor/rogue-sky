@@ -2,7 +2,7 @@
     "latitude": 47.6062,
     "longitude": -122.3321,
     "queried_date_utc": "2019-12-09",
-    "timezone": "America/New_York",
+    "timezone": "America/Los_Angeles",
     "daily_forecast": [
         {
             "cloud_cover_pct": 0.93,

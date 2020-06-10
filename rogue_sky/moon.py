@@ -28,47 +28,18 @@ def _degree_math(func, *degree):
 
 
 def sin(degree):
+    """Compute the sine where input is in degrees."""
     return _degree_math(np.sin, degree)
 
 
 def cos(degree):
+    """Compute the cosine where input is in degrees."""
     return _degree_math(np.cos, degree)
 
 
 def tan(degree):
+    """Compute the tangent where input is in degrees."""
     return _degree_math(np.tan, degree)
-
-
-def get_sidereal_time(date):
-    """Get sidereal time from clock time at location.
-
-    Sidereal time is a time scale that is based on the Earth's rate of rotation measured
-    relative to the fixed stars. rf. https://en.wikipedia.org/wiki/Sidereal_time
-
-    rf. https://www.aa.quae.nl/en/reken/sterrentijd.html#1_8
-
-    Formula:
-        Θ = M_Earth + Π_Earth + (15° * (t + t_z)) mod 360
-
-        where,
-            M_Earth = mean anomaly of earth
-            Π_Earth = how far past the perihelion and the ecliptic longitude of Earth
-            t = hour of today's local datetime
-            t_z = the amount of hours offset from UTC
-
-    Parameters
-    ----------
-    date : datetime.datetime
-
-    Returns
-    -------
-    float
-    """
-    M_Earth_ = get_mean_anomaly_earth(date=date)  # pylint: disable=invalid-name
-    Pi_Earth_ = 102.937  # pylint: disable=invalid-name
-    t_ = date.hour  # pylint: disable=invalid-name
-    t_z_ = date.utcoffset().total_seconds() / (60 * 60)
-    return (M_Earth_ + Pi_Earth_ + (15 * (t_ + t_z_))) % 360
 
 
 def get_geocentric_ecliptical_coordinates(date):
@@ -77,17 +48,21 @@ def get_geocentric_ecliptical_coordinates(date):
     rf. https://www.aa.quae.nl/en/reken/hemelpositie.html#4
 
     Formula:
-        λ = (
-            (218.316 + (13.176396 * (d - d_0))) +
-            (6.289 * sin(134.963 + (13.064993 * (d - d_0))))
-        )
-        β = 5.128 * sin(93.272 + (13.22935 * (d - d_0)))
+        F = 93.272 + (13.229350 * (d - d0)) % 360
+        L = 218.316 + (13.176396 * (d - d0)) % 360
+        M = 134.963 + (13.064993 * (d - d0)) % 360
+
+        λ = L + (6.289 * sin(M))
+        β = 5.128 * sin(F)
 
         where,
             β = geocentric ecliptical latitude
             λ = geocentric ecliptical longitude
             d = today
             d_0 = January 1, 2000 12PM UTC
+            F = average distance of the Moon from its ascending node
+            L = average geocentric ecliptic longitude
+            M = average anomaly
 
     Parameters
     ----------
@@ -102,41 +77,52 @@ def get_geocentric_ecliptical_coordinates(date):
     d_0_ = JAN_1_2000_UTC
     d_delta_days = (d_ - d_0_).total_seconds() / (24 * 60 * 60)
 
-    beta_ = 5.128 * sin(93.272 + (13.22935 * d_delta_days))
-    lambda_ = (218.316 + (13.176396 * d_delta_days)) + (
-        6.289 * sin(134.963 + (13.064993 * d_delta_days))
-    )
+    F_ = (93.272 + (13.229350 * d_delta_days)) % 360  # pylint: disable=invalid-name
+    L_ = (218.316 + (13.176396 * d_delta_days)) % 360  # pylint: disable=invalid-name
+    M_ = (134.963 + (13.064993 * d_delta_days)) % 360  # pylint: disable=invalid-name
+
+    beta_ = 5.128 * sin(F_)
+    lambda_ = L_ + (6.289 * sin(M_))
     return beta_, lambda_
 
 
-def get_declination(date):
-    """Get the declination of the moon from the date.
+def get_sidereal_time(date, longitude):
+    """Get sidereal time from clock time at location.
 
-    rf. https://www.aa.quae.nl/en/reken/hemelpositie.html#1_7
+    Sidereal time is a time scale that is based on the Earth's rate of rotation measured
+    relative to the fixed stars. rf. https://en.wikipedia.org/wiki/Sidereal_time
+
+    rf. https://www.aa.quae.nl/en/reken/sterrentijd.html#1_8
 
     Formula:
-        δ = arcsin(sin(β)cos(ε) + cos(β)sin(ε)sin(λ))
+        Θ = M_Earth + Π_Earth + (15° * (t + t_z)) mod 360
+        sidereal_time = Θ - l
 
         where,
-            δ = declination
-            β = geocentric ecliptical latitude
-            λ = geocentric ecliptical longitude
-            ε = 23.4397°
+            Θ = sidereal time on the prime meridian
+            M_Earth = mean anomaly of earth
+            Π_Earth = how far past the perihelion and the ecliptic longitude of Earth
+            t = hour of today's local datetime
+            t_z = the amount of hours offset from UTC
+            l = geographical longitude
 
     Parameters
     ----------
     date : datetime.datetime
+    longitude : float
 
     Returns
     -------
     float
     """
-    beta_, lambda_ = get_geocentric_ecliptical_coordinates(date=date)
-    return np.degrees(
-        np.arcsin(
-            (sin(beta_) * cos(EPSILON_)) + (cos(beta_) * sin(EPSILON_) * sin(lambda_))
-        )
-    )
+    M_Earth_ = get_mean_anomaly_earth(date=date)  # pylint: disable=invalid-name
+    Pi_Earth_ = 102.937  # pylint: disable=invalid-name
+    t_ = date.hour  # pylint: disable=invalid-name
+    t_z_ = -date.utcoffset().total_seconds() / (60 * 60)
+    # pylint: disable=invalid-name
+    Theta_ = (M_Earth_ + Pi_Earth_ + (15 * (t_ + t_z_))) % 360
+    sidereal_time = (Theta_ - longitude) % 360
+    return sidereal_time
 
 
 def get_mean_anomaly_earth(date):
@@ -169,6 +155,36 @@ def get_mean_anomaly_earth(date):
     return (357.529 + (0.985608 * d_delta_days)) % 360
 
 
+def get_declination(date):
+    """Get the how far the moon is from the celestial equator.
+
+    rf. https://www.aa.quae.nl/en/reken/hemelpositie.html#1_7
+
+    Formula:
+        δ = arcsin(sin(β)cos(ε) + cos(β)sin(ε)sin(λ))
+
+        where,
+            δ = declination
+            β = geocentric ecliptical latitude
+            λ = geocentric ecliptical longitude
+            ε = 23.4397°
+
+    Parameters
+    ----------
+    date : datetime.datetime
+
+    Returns
+    -------
+    float
+    """
+    beta_, lambda_ = get_geocentric_ecliptical_coordinates(date=date)
+    return np.degrees(
+        np.arcsin(
+            (sin(beta_) * cos(EPSILON_)) + (cos(beta_) * sin(EPSILON_) * sin(lambda_))
+        )
+    )
+
+
 def get_right_ascension(date):
     """Get the right ascension of the moon from the date.
 
@@ -199,6 +215,36 @@ def get_right_ascension(date):
     )
 
 
+def get_hour_angle(date, longitude):
+    """Get the hour angle of the moon at time and location.
+
+    The Hour angle indicates how far the moon has passed beyond the celestial meridian.
+    If 0, then its at its peak.
+
+    rf. https://www.aa.quae.nl/en/reken/hemelpositie.html#1_9
+
+    Formula:
+        H = θ − α
+
+        where,
+            H = hour angle
+            θ = sidereal time
+            α = right ascension
+
+    Parameters
+    ----------
+    date : datetime.datetime
+
+    Returns
+    -------
+    float
+
+    """
+    theta_ = get_sidereal_time(date=date, longitude=longitude)
+    alpha_ = get_right_ascension(date=date)
+    return theta_ - alpha_
+
+
 def correct_altitude(altitude):
     """Correct the actual altitude of the moon due to light refraction.
 
@@ -226,37 +272,7 @@ def correct_altitude(altitude):
     return h_ + (0.017 / (tan(h_ + (10.26 / (h_ + 5.10)))))
 
 
-def get_hour_angle(date):
-    """Get the hour angle of the moon at time and location.
-
-    The Hour angle indicates how far the moon has passed beyond the celestial meridian.
-    If 0, then its at its peak.
-
-    rf. https://www.aa.quae.nl/en/reken/hemelpositie.html#1_9
-
-    Formula:
-        H = θ − α
-
-        where,
-            H = hour angle
-            θ = sidereal time
-            α = right ascension
-
-    Parameters
-    ----------
-    date : datetime.datetime
-
-    Returns
-    -------
-    float
-
-    """
-    theta_ = get_sidereal_time(date=date)
-    alpha_ = get_right_ascension(date=date)
-    return theta_ - alpha_
-
-
-def get_altitude(date, latitude):
+def get_altitude(date, latitude, longitude):
     """Get the moon's altitude by an observer on Earth at date and location.
 
     rf. https://www.aa.quae.nl/en/reken/hemelpositie.html1_10
@@ -273,10 +289,11 @@ def get_altitude(date, latitude):
     ----------
     date : datetime.datetime
     latitude : float
+    longitude : float
     """
     phi_ = latitude
     delta_ = get_declination(date=date)
-    H_ = get_hour_angle(date=date)  # pylint: disable=invalid-name
+    H_ = get_hour_angle(date=date, longitude=longitude)  # pylint: disable=invalid-name
 
     altitude_actual = np.degrees(
         np.arcsin((sin(phi_) * sin(delta_)) + (cos(phi_) * cos(delta_) * cos(H_)))
@@ -285,91 +302,115 @@ def get_altitude(date, latitude):
     return altitude_apparent
 
 
-def get_horizon_angle(date, latitude):
-    """Get the hour angle of the horizon.
+def round_time(time):
+    """Round time to the nearest minute."""
+    seconds = time.second
+    minutes = time.minute if seconds < 30 else time.minute + 1
+    return time.replace(minute=minutes, second=0, microsecond=0)
 
-    rf. https://www.aa.quae.nl/en/reken/hemelpositie.html#2_2
 
-    Formula:
-        H_horizon = arccos((sin(h_0) − sin(φ)sin(δ)) / cos(φ)cos(δ))
+def solve_2d_quadratic(x, y):
+    """Solve for the roots of a 2d quadratic fitting `x` and `y`.
 
-        where,
-            H_horizon = horizon hour angle
-            h_0 = the height which we call the "horizon" (can change given refraction)
-            φ = geographical latitude
-            δ = declination
+    Include whether the slope is increasing or decreasing at root, and
+    only return roots that are within the interval [x[0], x[1]].
+
+    Solve for ax^2 + bx + x c = 0, which should have 2 roots.
+    To determine the slope at root, take the deriviative of the quadratic
+    (2ax + b) and determine if that's positive (ascending) or negative
+    (descending) at point.
 
     Parameters
     ----------
-    date : datetime.datetime
-    latitude : float
+    x : array-like
+        Must be the same shape as `y`.
+    y : array-like
+        Must be the same shape as `x`.
 
     Returns
     -------
-    float
+    list of dict
+        [
+            {
+                "value": float,
+                "ascending": boolean
+            }
+        ]
     """
-    h_0_ = 0
-    phi_ = latitude
-    delta_ = get_declination(date=date)
-    return np.degrees(
-        np.arccos((sin(h_0_) - (sin(phi_) * sin(delta_))) / (cos(phi_) * cos(delta_)))
-    )
+    a, b, c = np.polyfit(x, y, 2)  # pylint: disable=invalid-name
+    roots = np.roots([a, b, c])
+
+    return [
+        {"value": root, "ascending": (2 * a * root) + b > 0}
+        for root in roots
+        if x[0] < root < x[-1]
+    ]
 
 
-def get_transit_time(date, latitude):
-    """Get the transit time of the Moon at location.
+def get_rise_time(local_date, latitude, longitude):
+    """Get the time of moon rise at the local date and coordinates.
 
-    The point at which the Moon passes the celestial meridian and is highest in the sky.
+    rf. http://www.stargazing.net/kepler/moonrise.html
 
-    rf. https://www.aa.quae.nl/en/reken/hemelpositie.html#2_1
-
-    Formula:
-        t_transit = ((α + l − M_Earth − Π_Earth) / 15) − t_z
-
-        where,
-            t_transit = time at which Moon is at the celestial meridian
-            α = right ascension (how far the moon is from the vernal equinox)
-            M_Earth = Mean Anomoly
-            Π_Earth = 102.937
-            t_z = the number of hours you'd have to add to local time to get to UTC
+    Forumla:
+        (1) calculate the sine of the altitude for the first 3 hours of the day
+            times: (d_0, d_1, d_2); altitudes at times (h_0, h_1, h_2)
+        (2) determine if the path of the altitude made by the 3 points
+            (h_0, h_1, h_2) passes 0, which is the horizon.
+            (2.1) if so, find the point at which altitude = 0
+                (2.1.1) if slope is ascending at point, return and exit
+                (2.1.2) else go to step (2.3)
+            (2.2) if not,
+                (2.2.1) if d_0 > 24 return None and exit
+                (2.2.2) else go to step (2.3)
+            (2.3) repeat step (2) using the next 3 hours starting at d_2:
+                d_0 = d_2
+                d_1 = d_0 + 1 hour
+                d_2 = d_0 + 2 hours
+                h_0 = h_2
+                h_1 = altitude(d_1)
+                h_2 = altitude(d_2)
 
     Parameters
     ----------
-    date : datetime.datetime
-    latitiude : float
-
-    Returns
-    -------
-    float
-    """
-    alpha_ = get_right_ascension(date=date)  # pylint: disable=invalid-name
-    l_ = latitude  # pylint: disable=invalid-name
-    M_Earth_ = get_mean_anomaly_earth(date=date)  # pylint: disable=invalid-name
-    Pi_Earth_ = 102.937  # pylint: disable=invalid-name
-    t_z_ = date.utcoffset().total_seconds() / (60 * 60)
-    return ((alpha_ + l_ - M_Earth_ - Pi_Earth_) / 15) - t_z_
-
-
-def get_rise_time(date, latitude, longitude):
-    """Get the moon rise time, if happens, on date at location.
-
-    rf. https://www.aa.quae.nl/en/reken/hemelpositie.html#2_2
-
-    Formula:
-
-
-    Parameters
-    ----------
-    date : datetime.datetime
-        Should have timezone at location.
+    local_date : datetime.datetime
+        Should be in the timezone of coordinates.
     latitude : float
-        180-degree system
+        Must be in decimal 180-degree system.
     longitude : float
-        180-degree system
-    """
-    # initialize date and altitude
-    d_0 = date.replace(hour=0, minute=0, second=0)
-    h_0 = get_altitude(date=d_0, latitude=latitude)
+        Must be in decimal 180-degree system.
 
-    for hour in list(range(1, 24))[::2]:
-        h_1 = get_altitude()
+    Returns
+    -------
+    datetime.datetime | None
+        Returns `None` if no moon rise is supposed to predicted to occur on
+        the date in the timezone of of `local_date`.
+    """
+    longitude = -longitude  # this algorith uses westward longitude
+    date = local_date.replace(hour=0, minute=0, second=0, microsecond=0)
+
+    rise = None
+    d_0 = date
+    h_0 = np.radians(get_altitude(date=d_0, latitude=latitude, longitude=longitude))
+    for i in range(1, 24, 2):
+        d_1 = d_0 + datetime.timedelta(hours=1)
+        h_1 = np.radians(get_altitude(date=d_1, latitude=latitude, longitude=longitude))
+
+        d_2 = d_0 + datetime.timedelta(hours=2)
+        h_2 = np.radians(get_altitude(date=d_2, latitude=latitude, longitude=longitude))
+
+        x = [i - 1, i, i + 1]
+        y = [h_0, h_1, h_2]
+        for root in solve_2d_quadratic(x, y):
+            if root["ascending"]:
+                rise = date + datetime.timedelta(hours=root["value"])
+                break
+
+        if rise:
+            break
+
+        d_0 = d_2
+        h_0 = h_2
+
+    rise = round_time(rise) if rise else rise
+    return rise
