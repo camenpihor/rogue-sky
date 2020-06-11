@@ -121,8 +121,6 @@ def _parse_darksky_response(response_json, queried_date_utc):
             # these times are returned by DarkSky in UTC
             if key in ("sunriseTime", "sunsetTime"):
                 return arrow.get(value).to(timezone).isoformat()
-            if key == "moonPhase":
-                value = round(1 - abs(1 - (2 * value)), 2)
         return value
 
     return [
