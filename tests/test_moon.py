@@ -124,3 +124,11 @@ def test_cos():
 
 def test_tan():
     assert moon.tan(45) == np.tan(np.pi / 4)
+
+
+def test_phase_to_illumination():
+    assert moon.phase_to_illumination(phase=1) == 0  # new moon
+    assert moon.phase_to_illumination(phase=0.5) == 1  # full moon
+    assert moon.phase_to_illumination(phase=0.25) == 0.5  # waxing half moon
+    assert moon.phase_to_illumination(phase=0.75) == 0.5  # waning half moon
+    assert moon.phase_to_illumination(phase=0) == 0

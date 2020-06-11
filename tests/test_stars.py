@@ -48,7 +48,7 @@ def test_serialize(parsed_star_visbility_forecast, serialized_weather_forecast):
 
     assert set(actual["daily_forecast"][0].keys()) == set(
         list(darksky.DAILY_WEATHER_MAPPING.keys())
-        + ["star_visibility", "moonrise_time_local"]
+        + ["star_visibility", "moonrise_time_local", "moon_illumination"]
     )
 
 

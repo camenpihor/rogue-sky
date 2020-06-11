@@ -414,3 +414,29 @@ def get_rise_time(local_date, latitude, longitude):
 
     rise = round_time(rise) if rise else rise
     return rise
+
+
+def phase_to_illumination(phase):
+    """Calculate the moon illumination from the moon phase.
+
+    "Illumination" is how full the moon is. Whereas moon phase describes both how full
+    the moon is, but also whether it is waxing or waning.
+
+    New Moon:           Phase 0 or 1    Illumination 0
+    Half Moon Waxing:   Phase 0.25      Illumination 0.5
+    Full Moon:          Phase 0.5       Illunmination 1
+    Half Moon Waning:   Phase 0.75      Illumination 0.5
+
+    rf. https://idlastro.gsfc.nasa.gov/ftp/pro/astro/mphase.pro
+
+    Parameters
+    ----------
+    phase : float
+        0 to 1
+
+    Returns
+    -------
+    float
+        0 to 1
+    """
+    return (1 + np.cos(((phase - 0.5) * np.pi) / 0.5)) / 2
