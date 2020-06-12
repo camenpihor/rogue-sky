@@ -306,7 +306,11 @@ def round_time(time):
     """Round time to the nearest minute."""
     seconds = time.second
     minutes = time.minute if seconds < 30 else time.minute + 1
-    return time.replace(minute=minutes, second=0, microsecond=0)
+    hours = time.hour
+    if minutes == 60:
+        hours += 1
+        minutes = 0
+    return time.replace(hour=hours, minute=minutes, second=0, microsecond=0)
 
 
 def solve_2d_quadratic(x, y):
