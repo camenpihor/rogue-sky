@@ -1,5 +1,6 @@
-import arrow
 import datetime
+
+import arrow
 import numpy as np
 import pytest
 

@@ -7,7 +7,7 @@
 2. `set -o allexport && source .env && set +o allexport` to export environment variables
 3. `python setup.py install` to install package
 4. `pip install -r requirements.testing.in` to install testing requirements
-6. `scripts/test` to verify install
+5. `scripts/test-it` to verify install
 
 ## Examples
 
@@ -16,4 +16,3 @@ Check out `examples/playing_around.ipynb`!
 ## TODOs
 
 - geopy is slow :(
-- should I return city, state, or entire address?

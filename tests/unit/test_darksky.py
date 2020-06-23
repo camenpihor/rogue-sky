@@ -2,7 +2,6 @@
 # requests-mock package creates a pytest fixture, `requests_mock`
 import json
 
-import numpy as np
 import pytest
 import requests
 
@@ -120,15 +119,3 @@ def test_parse_darksky_response(darksky_json_response):
     assert weather_json["sunrise_time_local"] == "2019-11-10T07:09:00-08:00"
     assert weather_json["sunset_time_local"] == "2019-11-10T16:41:00-08:00"
     assert weather_json["precip_type"] is None
-
-
-def test_parse_address():
-    latitude, longitude = (47.6062, -122.3321)
-    actual = darksky.parse_address(f"{latitude}, {longitude}")
-    assert actual == (latitude, longitude)
-
-    actual = darksky.parse_address(f"{latitude},{longitude}")
-    assert actual == (latitude, longitude)
-
-    actual = darksky.parse_address("Seattle, WA")
-    np.testing.assert_array_almost_equal(actual, (latitude, longitude), decimal=2)

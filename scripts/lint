@@ -1,0 +1,14 @@
+#!/bin/bash
+set -ex # fail on first error, print commands
+
+echo "Checking documentation..."
+python3 -m pydocstyle rogue_sky
+echo "Success!"
+
+echo "Checking code style with black..."
+python3 -m black --line-length 90 --check rogue_sky
+echo "Success!"
+
+echo "Checking code style with pylint..."
+python3 -m pylint rogue_sky
+echo "Success!"

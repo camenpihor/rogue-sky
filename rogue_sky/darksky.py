@@ -285,4 +285,4 @@ def parse_address(address):
             location = geo_locator.geocode(address)
 
             return location.latitude, location.longitude
-    raise ValueError("Could not parse {address}")
+    raise ValueError(f"Could not parse {address}")
