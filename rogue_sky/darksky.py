@@ -120,7 +120,7 @@ def _parse_darksky_response(response_json, queried_date_utc):
                 return parse_local_unix_date(local_date=value)
             # these times are returned by DarkSky in UTC
             if key in ("sunriseTime", "sunsetTime"):
-                return arrow.get(value).to(timezone).isoformat()
+                return arrow.get(value).to(timezone).format("h:mm a ZZZ")
         return value
 
     return [

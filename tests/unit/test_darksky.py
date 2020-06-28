@@ -116,6 +116,6 @@ def test_parse_darksky_response(darksky_json_response):
 
     # tests parse()
     assert weather_json["weather_date_local"] == "2019-11-10"
-    assert weather_json["sunrise_time_local"] == "2019-11-10T07:09:00-08:00"
-    assert weather_json["sunset_time_local"] == "2019-11-10T16:41:00-08:00"
+    assert weather_json["sunrise_time_local"] == "7:09 am PST"
+    assert weather_json["sunset_time_local"] == "4:41 pm PST"
     assert weather_json["precip_type"] is None
