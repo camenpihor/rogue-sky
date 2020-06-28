@@ -160,7 +160,9 @@ def _serialize(predictions, weather_forecast):
         )
 
         day_forecast["moonrise_time_local"] = (
-            arrow.get(moon_rise_time).isoformat() if moon_rise_time else moon_rise_time
+            arrow.get(moon_rise_time).format("h:mm a ZZZ")
+            if moon_rise_time
+            else moon_rise_time
         )
         day_forecast["moon_illumination"] = moon.phase_to_illumination(
             phase=day_forecast["moon_phase_pct"]
