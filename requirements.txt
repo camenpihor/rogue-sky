@@ -5,13 +5,24 @@
 #    pip-compile --no-index --output-file=requirements.txt requirements.in
 #
 arrow==0.15.4
-certifi==2019.9.11        # via requests
-chardet==3.0.4            # via requests
-geographiclib==1.50       # via geopy
+    # via -r requirements.in
+certifi==2019.9.11
+    # via requests
+chardet==3.0.4
+    # via requests
+geographiclib==1.50
+    # via geopy
 geopy==1.20.0
-idna==2.8                 # via requests
+    # via -r requirements.in
+idna==2.8
+    # via requests
 numpy==1.17.3
-python-dateutil==2.8.1    # via arrow
+    # via -r requirements.in
+python-dateutil==2.8.1
+    # via arrow
 requests==2.22.0
-six==1.12                 # via python-dateutil
-urllib3==1.25.6           # via requests
+    # via -r requirements.in
+six==1.12
+    # via python-dateutil
+urllib3==1.25.8
+    # via requests
