@@ -16,11 +16,14 @@ Variables:
 
 """
 import datetime
+import logging
 
 import numpy as np
 
 EPSILON_ = 23.4397
 JAN_1_2000_UTC = datetime.datetime(2000, 1, 1, 12, tzinfo=datetime.timezone.utc)
+
+_logger = logging.getLogger(__name__)
 
 
 def _degree_math(func, *degree):
@@ -390,7 +393,7 @@ def get_rise_time(local_date, latitude, longitude):
         Returns `None` if no moon rise is supposed to predicted to occur on
         the date in the timezone of of `local_date`.
     """
-    longitude = -longitude  # this algorith uses westward longitude
+    longitude = -longitude  # this algorithm uses westward longitude
     date = local_date.replace(hour=0, minute=0, second=0, microsecond=0)
 
     rise = None
@@ -407,6 +410,9 @@ def get_rise_time(local_date, latitude, longitude):
         y = [h_0, h_1, h_2]
         for root in solve_2d_quadratic(x, y):
             if root["ascending"]:
+                if isinstance(root["value"], np.complex128):
+                    _logger.info(root)
+
                 rise = date + datetime.timedelta(hours=root["value"])
                 break
 
