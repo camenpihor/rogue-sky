@@ -409,11 +409,9 @@ def get_rise_time(local_date, latitude, longitude):
         y = [h_0, h_1, h_2]
         for root in solve_2d_quadratic(x, y):
             if root["ascending"]:
-                if isinstance(root["value"], np.complex128):
-                    _logger.info(root)
-
-                rise = date + datetime.timedelta(hours=root["value"])
-                break
+                if not isinstance(root["value"], np.complex128):
+                    rise = date + datetime.timedelta(hours=root["value"])
+                    break
 
         if rise:
             break
