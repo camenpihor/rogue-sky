@@ -6,7 +6,7 @@ python3 -m pydocstyle rogue_sky
 echo "Success!"
 
 echo "Checking code style with black..."
-python3 -m black --line-length 90 --check rogue_sky
+python3 -m black --line-length 100 --check rogue_sky
 echo "Success!"
 
 echo "Checking code style with pylint..."

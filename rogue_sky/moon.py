@@ -182,9 +182,7 @@ def get_declination(date):
     """
     beta_, lambda_ = get_geocentric_ecliptical_coordinates(date=date)
     return np.degrees(
-        np.arcsin(
-            (sin(beta_) * cos(EPSILON_)) + (cos(beta_) * sin(EPSILON_) * sin(lambda_))
-        )
+        np.arcsin((sin(beta_) * cos(EPSILON_)) + (cos(beta_) * sin(EPSILON_) * sin(lambda_)))
     )
 
 
@@ -213,7 +211,8 @@ def get_right_ascension(date):
     beta_, lambda_ = get_geocentric_ecliptical_coordinates(date=date)
     return np.degrees(
         np.arctan2(
-            (sin(lambda_) * cos(EPSILON_)) - (tan(beta_) * sin(EPSILON_)), cos(lambda_),
+            (sin(lambda_) * cos(EPSILON_)) - (tan(beta_) * sin(EPSILON_)),
+            cos(lambda_),
         )
     )
 

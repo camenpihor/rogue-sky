@@ -73,7 +73,7 @@ def _make_request(api_key, latitude, longitude, queried_date_utc, **query_parame
         response.raise_for_status()  # raise exception for non-success error codes
     except requests.exceptions.HTTPError:
         # we wrap HTTPError so that we don't print out the secret API key
-        raise requests.exceptions.HTTPError(
+        raise requests.exceptions.HTTPError(  # pylint: disable=raise-missing-from
             f"{response.status_code}: request failed for reason: {response.reason}"
         )
     return response
@@ -178,12 +178,17 @@ def _from_darksky(latitude, longitude, queried_date_utc, api_key):
         longitude=longitude,
         queried_date_utc=queried_date_utc,
         query_parameters={
-            "exclude": ["alerts", "flags", "hourly", "minutely", "offset", "currently",]
+            "exclude": [
+                "alerts",
+                "flags",
+                "hourly",
+                "minutely",
+                "offset",
+                "currently",
+            ]
         },
     )
-    return _parse_darksky_response(
-        response_json=response.json(), queried_date_utc=queried_date_utc
-    )
+    return _parse_darksky_response(response_json=response.json(), queried_date_utc=queried_date_utc)
 
 
 def _serialize(response):
@@ -218,9 +223,7 @@ def _serialize(response):
         "longitude": response[0]["longitude"],
         "queried_date_utc": response[0]["queried_date_utc"],
         "timezone": response[0]["timezone"],
-        "daily_forecast": [
-            json.loads(daily_weather["weather_json"]) for daily_weather in response
-        ],
+        "daily_forecast": [json.loads(daily_weather["weather_json"]) for daily_weather in response],
     }
 
 

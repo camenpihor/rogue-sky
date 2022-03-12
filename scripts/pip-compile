@@ -1,4 +1,4 @@
 #!/bin/bash
 set -eoux pipefail
 
-pip-compile --no-index requirements.in -o requirements.txt
+pip-compile --no-emit-index-url requirements.in -o requirements.txt

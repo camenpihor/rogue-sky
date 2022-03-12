@@ -1,4 +1,6 @@
 # pylint: disable=protected-access
+import requests_mock
+
 from rogue_sky import darksky, stars
 
 
@@ -31,16 +33,17 @@ def test_serialize(parsed_star_visbility_forecast, serialized_weather_forecast):
     )
 
 
-def test_get_star_forecast(requests_mock, darksky_json_response):
+def test_get_star_forecast(darksky_json_response):
     api_key = "test"
     latitude = 47.6062
     longitude = -122.3321
     test_url = darksky.DARKSKY_URL.format(
         api_key=api_key, latitude=latitude, longitude=longitude
     )
-    requests_mock.get(test_url, json=darksky_json_response)
-    actual = stars.get_star_forecast(
-        latitude=latitude, longitude=longitude, api_key=api_key,
-    )
+    with requests_mock.Mocker(real_http=True) as mock:
+        mock.get(test_url, json=darksky_json_response)
+        actual = stars.get_star_forecast(
+            latitude=latitude, longitude=longitude, api_key=api_key,
+        )
     assert len(actual["daily_forecast"]) == len(darksky_json_response["daily"]["data"])
     assert isinstance(actual, dict)

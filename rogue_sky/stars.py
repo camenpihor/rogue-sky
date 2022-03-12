@@ -63,10 +63,7 @@ def _from_weather(weather_forecast):
         ]
     """
     cloud_cover = np.array(
-        [
-            daily_weather["cloud_cover_pct"]
-            for daily_weather in weather_forecast["daily_forecast"]
-        ]
+        [daily_weather["cloud_cover_pct"] for daily_weather in weather_forecast["daily_forecast"]]
     )
     return [
         {
@@ -139,9 +136,7 @@ def _serialize(predictions, weather_forecast):
     star_forecast = weather_forecast.copy()
 
     locator = geopy.geocoders.Nominatim(user_agent="rogue_sky", timeout=3)
-    location = locator.reverse(
-        f"{star_forecast['latitude']}, {star_forecast['longitude']}"
-    ).raw
+    location = locator.reverse(f"{star_forecast['latitude']}, {star_forecast['longitude']}").raw
 
     if "city" in location["address"]:
         star_forecast["city"] = location["address"]["city"]
@@ -160,9 +155,7 @@ def _serialize(predictions, weather_forecast):
         )
 
         day_forecast["moonrise_time_local"] = (
-            arrow.get(moon_rise_time).format("h:mm a ZZZ")
-            if moon_rise_time
-            else moon_rise_time
+            arrow.get(moon_rise_time).format("h:mm a ZZZ") if moon_rise_time else moon_rise_time
         )
         day_forecast["moon_illumination"] = moon.phase_to_illumination(
             phase=day_forecast["moon_phase_pct"]
@@ -209,7 +202,9 @@ def get_star_forecast(latitude, longitude, api_key):
         queried_date_utc,
     )
     weather_forecast = darksky.get_weather_forecast(
-        latitude=latitude, longitude=longitude, api_key=api_key,
+        latitude=latitude,
+        longitude=longitude,
+        api_key=api_key,
     )
     predictions = _from_weather(weather_forecast=weather_forecast)
     return _serialize(predictions=predictions, weather_forecast=weather_forecast)
